@@ -33,6 +33,7 @@ AR switches the layout to right-to-left).
 | `npm run start` | Serve the production build |
 | `npm run lint` | ESLint (Next.js core-web-vitals + TypeScript rules) |
 | `npm run typecheck` | TypeScript check without emitting files |
+| `npm run bundle` | Regenerate `supabase/setup_all.sql` from the migrations + seed (with consistency checks) |
 | `npm run verify:db` | Verify the live database: seed data + RLS negative tests |
 
 ### Environment variables
@@ -59,8 +60,11 @@ To connect a real database:
 
    **Shortcut:** on a *fresh* project you can instead paste
    `supabase/setup_all.sql` ONCE — a generated bundle of all five
-   migrations **plus** the seed below, in the correct order. Do not
-   hand-edit that file; it is regenerated from the migrations.
+   migrations **plus** the seed below, in the correct order. The
+   bundle is safe to re-run even if a previous attempt failed halfway
+   (tables/indexes use IF NOT EXISTS, triggers and policies are
+   dropped and recreated — metadata only, data is never touched).
+   Regenerate it with `npm run bundle`; do not hand-edit it.
 3. **Seed the demo content:** run `supabase/seed.sql` the same way
    (safe to re-run — every insert is idempotent).
 4. **Expose the tables to the Data API.** If the project was created

@@ -2,7 +2,9 @@
 -- SiteWib — Seed data: "Atlas Voyages" (FICTIONAL demo agency)
 --
 -- Run AFTER migrations 0001–0005, once, in the Supabase SQL Editor.
--- Safe to re-run: every insert uses ON CONFLICT DO NOTHING.
+-- Safe to re-run: keyed inserts use ON CONFLICT DO NOTHING; tables
+-- without a natural unique key (testimonials, faqs, tour_departures)
+-- use a NOT EXISTS guard instead.
 -- Contains NO real client data by design — it exists to be replaced.
 -- ═══════════════════════════════════════════════════════════════════
 
@@ -110,6 +112,9 @@ where t.slug = 'fes-meknes-2-jours'
 on conflict (tour_id, day_number) do nothing;
 
 -- ── Departures: Sahara tour (scheduled dates) ────────────────────────
+-- (tour_departures has no unique key, so ON CONFLICT can never fire —
+--  the NOT EXISTS guard, like the one used for testimonials/faqs,
+--  keeps the seed safe to re-run.)
 insert into public.tour_departures (tour_id, start_date, end_date, price_mad, max_participants)
 select t.id, d.start_date, d.end_date, d.price, d.max_pax
 from public.tours t
@@ -119,6 +124,7 @@ join (values
   (date '2027-05-10', date '2027-05-12', 1890.00, 12)
 ) as d(start_date, end_date, price, max_pax) on true
 where t.slug = 'sahara-merzouga-3-jours'
+  and not exists (select 1 from public.tour_departures)
 on conflict do nothing;
 
 -- ── Testimonials ─────────────────────────────────────────────────────

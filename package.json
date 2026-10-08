@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "bundle": "node scripts/build-setup-bundle.mjs",
     "verify:db": "node --env-file=.env.local scripts/verify-db.mjs"
   },
   "dependencies": {

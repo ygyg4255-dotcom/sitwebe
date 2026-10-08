@@ -8,7 +8,7 @@
 -- Customer booking requests (inquiries, NOT payments — Phase 4+ may
 -- add payments). Insertable by anyone (the booking form), readable and
 -- manageable only by staff (enforced by RLS in migration 0004).
-create table public.bookings (
+create table if not exists public.bookings (
   id                uuid primary key default gen_random_uuid(),
   tour_id           uuid references public.tours (id) on delete set null,
   departure_id      uuid references public.tour_departures (id) on delete set null,
@@ -27,11 +27,11 @@ create table public.bookings (
 comment on table public.bookings is
   'Booking requests from customers. Status workflow: new → contacted → confirmed / cancelled.';
 
-create index bookings_status_created_idx on public.bookings (status, created_at);
+create index if not exists bookings_status_created_idx on public.bookings (status, created_at);
 
 -- ── inquiries ─────────────────────────────────────────────────────────
 -- Simple contact form messages (not tied to a tour).
-create table public.inquiries (
+create table if not exists public.inquiries (
   id          uuid primary key default gen_random_uuid(),
   name        text not null,
   email       text not null,
@@ -44,7 +44,7 @@ create table public.inquiries (
 comment on table public.inquiries is 'Contact form messages.';
 
 -- ── testimonials ──────────────────────────────────────────────────────
-create table public.testimonials (
+create table if not exists public.testimonials (
   id             uuid primary key default gen_random_uuid(),
   author_name    text not null,
   author_country text,
@@ -60,7 +60,7 @@ comment on table public.testimonials is 'Customer reviews shown on the public si
 
 -- ── blog_posts ───────────────────────────────────────────────────────
 -- Markdown articles (SEO). *_en / *_ar optional — French-first.
-create table public.blog_posts (
+create table if not exists public.blog_posts (
   id              uuid primary key default gen_random_uuid(),
   slug            text unique not null,
   title_fr        text not null,
@@ -81,10 +81,10 @@ create table public.blog_posts (
 
 comment on table public.blog_posts is 'Blog articles (Markdown content) for SEO.';
 
-create index blog_posts_published_idx on public.blog_posts (is_published, published_at);
+create index if not exists blog_posts_published_idx on public.blog_posts (is_published, published_at);
 
 -- ── faqs ──────────────────────────────────────────────────────────────
-create table public.faqs (
+create table if not exists public.faqs (
   id           uuid primary key default gen_random_uuid(),
   question_fr  text not null,
   question_en  text,

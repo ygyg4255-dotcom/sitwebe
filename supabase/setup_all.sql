@@ -13,16 +13,18 @@
 -- project and run it — it creates all 11 tables, the RLS policies,
 -- the storage bucket and the demo data in a single step.
 --
--- If any migration changes, regenerate this file from the sources
--- (do not hand-edit it) or run the migrations individually instead.
+-- Safe to RE-RUN at any time, even if a previous attempt failed
+-- halfway: tables and indexes use IF NOT EXISTS, functions are
+-- CREATE OR REPLACE, triggers and policies are dropped and recreated
+-- (metadata only — never touches data), and every seed insert is
+-- idempotent. Existing data is never modified or deleted.
 --
--- Idempotent: every migration is plain CREATE statements (safe on a
--- fresh project); the seed inserts are ON CONFLICT DO NOTHING, so
--- re-running the whole bundle only re-executes the CREATEs, which
--- will error harmlessly with "already exists" on a second run.
+-- If any migration changes, regenerate this file from the sources
+-- (npm run bundle) — do not hand-edit it.
 -- ═══════════════════════════════════════════════════════════════════
+
 -- ═══════════════════════════════════════════════════════════════════
--- BEGIN FILE: 0001_profiles_and_settings.sql
+-- BEGIN FILE: supabase/migrations/0001_profiles_and_settings.sql
 -- ═══════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════
@@ -36,7 +38,7 @@
 -- One row per staff member (admin or editor). Rows are created
 -- automatically when a user is added in Supabase → Authentication →
 -- Users (see the trigger at the bottom of this block).
-create table public.profiles (
+create table if not exists public.profiles (
   id          uuid primary key references auth.users (id) on delete cascade,
   full_name   text not null default 'Membre',
   role        text not null default 'editor' check (role in ('admin', 'editor')),
@@ -64,6 +66,7 @@ begin
 end;
 $$;
 
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
@@ -72,7 +75,7 @@ create trigger on_auth_user_created
 -- The white-label source of truth: ALL client branding, colors,
 -- contact and social data live in this single row. The check on `id`
 -- guarantees the table can never contain more than one row.
-create table public.site_settings (
+create table if not exists public.site_settings (
   id                 int primary key default 1 check (id = 1),
   agency_name        text not null default 'Atlas Voyages',
   tagline            text,
@@ -106,10 +109,10 @@ create table public.site_settings (
 comment on table public.site_settings is
   'White-label branding & contact data. Always exactly one row (id = 1).';
 
--- END FILE: 0001_profiles_and_settings.sql
+-- END FILE: supabase/migrations/0001_profiles_and_settings.sql
 
 -- ═══════════════════════════════════════════════════════════════════
--- BEGIN FILE: 0002_catalog_tables.sql
+-- BEGIN FILE: supabase/migrations/0002_catalog_tables.sql
 -- ═══════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════
@@ -120,7 +123,7 @@ comment on table public.site_settings is
 
 -- ── destinations ─────────────────────────────────────────────────────
 -- Regions the agency covers (Marrakech, Sahara, Chefchaouen, …).
-create table public.destinations (
+create table if not exists public.destinations (
   id             uuid primary key default gen_random_uuid(),
   slug           text unique not null,
   name_fr        text not null,
@@ -139,7 +142,7 @@ comment on table public.destinations is
 
 -- ── tours ────────────────────────────────────────────────────────────
 -- The core product: a tour or travel package.
-create table public.tours (
+create table if not exists public.tours (
   id                  uuid primary key default gen_random_uuid(),
   destination_id     uuid references public.destinations (id) on delete set null,
   slug                text unique not null,
@@ -172,8 +175,8 @@ create table public.tours (
 comment on table public.tours is
   'Core product: tours/packages. Draft until is_published, shown on the home page when is_featured.';
 
-create index tours_published_featured_idx on public.tours (is_published, is_featured);
-create index tours_destination_idx on public.tours (destination_id);
+create index if not exists tours_published_featured_idx on public.tours (is_published, is_featured);
+create index if not exists tours_destination_idx on public.tours (destination_id);
 
 -- Keep updated_at current automatically on every UPDATE.
 create or replace function public.set_updated_at()
@@ -186,13 +189,14 @@ begin
 end;
 $$;
 
+drop trigger if exists tours_set_updated_at on public.tours;
 create trigger tours_set_updated_at
   before update on public.tours
   for each row execute function public.set_updated_at();
 
 -- ── tour_itinerary ───────────────────────────────────────────────────
 -- Day-by-day program of a tour. Deleted with its tour (cascade).
-create table public.tour_itinerary (
+create table if not exists public.tour_itinerary (
   id             uuid primary key default gen_random_uuid(),
   tour_id        uuid not null references public.tours (id) on delete cascade,
   day_number     int not null check (day_number >= 1),
@@ -210,7 +214,7 @@ comment on table public.tour_itinerary is
 
 -- ── tour_departures ──────────────────────────────────────────────────
 -- Scheduled departure dates for a tour, with optional per-date pricing.
-create table public.tour_departures (
+create table if not exists public.tour_departures (
   id                  uuid primary key default gen_random_uuid(),
   tour_id             uuid not null references public.tours (id) on delete cascade,
   start_date          date not null,
@@ -224,10 +228,10 @@ create table public.tour_departures (
 comment on table public.tour_departures is
   'Scheduled departure dates for a tour (optional per-date price and capacity).';
 
--- END FILE: 0002_catalog_tables.sql
+-- END FILE: supabase/migrations/0002_catalog_tables.sql
 
 -- ═══════════════════════════════════════════════════════════════════
--- BEGIN FILE: 0003_engagement_tables.sql
+-- BEGIN FILE: supabase/migrations/0003_engagement_tables.sql
 -- ═══════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════
@@ -240,7 +244,7 @@ comment on table public.tour_departures is
 -- Customer booking requests (inquiries, NOT payments — Phase 4+ may
 -- add payments). Insertable by anyone (the booking form), readable and
 -- manageable only by staff (enforced by RLS in migration 0004).
-create table public.bookings (
+create table if not exists public.bookings (
   id                uuid primary key default gen_random_uuid(),
   tour_id           uuid references public.tours (id) on delete set null,
   departure_id      uuid references public.tour_departures (id) on delete set null,
@@ -259,11 +263,11 @@ create table public.bookings (
 comment on table public.bookings is
   'Booking requests from customers. Status workflow: new → contacted → confirmed / cancelled.';
 
-create index bookings_status_created_idx on public.bookings (status, created_at);
+create index if not exists bookings_status_created_idx on public.bookings (status, created_at);
 
 -- ── inquiries ─────────────────────────────────────────────────────────
 -- Simple contact form messages (not tied to a tour).
-create table public.inquiries (
+create table if not exists public.inquiries (
   id          uuid primary key default gen_random_uuid(),
   name        text not null,
   email       text not null,
@@ -276,7 +280,7 @@ create table public.inquiries (
 comment on table public.inquiries is 'Contact form messages.';
 
 -- ── testimonials ──────────────────────────────────────────────────────
-create table public.testimonials (
+create table if not exists public.testimonials (
   id             uuid primary key default gen_random_uuid(),
   author_name    text not null,
   author_country text,
@@ -292,7 +296,7 @@ comment on table public.testimonials is 'Customer reviews shown on the public si
 
 -- ── blog_posts ───────────────────────────────────────────────────────
 -- Markdown articles (SEO). *_en / *_ar optional — French-first.
-create table public.blog_posts (
+create table if not exists public.blog_posts (
   id              uuid primary key default gen_random_uuid(),
   slug            text unique not null,
   title_fr        text not null,
@@ -313,10 +317,10 @@ create table public.blog_posts (
 
 comment on table public.blog_posts is 'Blog articles (Markdown content) for SEO.';
 
-create index blog_posts_published_idx on public.blog_posts (is_published, published_at);
+create index if not exists blog_posts_published_idx on public.blog_posts (is_published, published_at);
 
 -- ── faqs ──────────────────────────────────────────────────────────────
-create table public.faqs (
+create table if not exists public.faqs (
   id           uuid primary key default gen_random_uuid(),
   question_fr  text not null,
   question_en  text,
@@ -330,10 +334,10 @@ create table public.faqs (
 
 comment on table public.faqs is 'Frequently asked questions shown on the public site.';
 
--- END FILE: 0003_engagement_tables.sql
+-- END FILE: supabase/migrations/0003_engagement_tables.sql
 
 -- ═══════════════════════════════════════════════════════════════════
--- BEGIN FILE: 0004_rls_policies.sql
+-- BEGIN FILE: supabase/migrations/0004_rls_policies.sql
 -- ═══════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════
@@ -352,6 +356,10 @@ comment on table public.faqs is 'Frequently asked questions shown on the public 
 --                   bookings/inquiries/settings
 --
 -- Run AFTER 0003.
+--
+-- Rerun-safe: every policy is dropped first (metadata only — dropping
+-- and recreating a policy never touches table data), so this file can
+-- be re-run on a database that already has the policies.
 -- ═══════════════════════════════════════════════════════════════════
 
 -- ── Helper functions ─────────────────────────────────────────────────
@@ -388,21 +396,42 @@ $$;
 -- ── profiles ──────────────────────────────────────────────────────────
 alter table public.profiles enable row level security;
 
+-- NOTE on the update policy below: RLS policy expressions are plain
+-- SQL — the OLD row record is NOT available there (it only exists
+-- inside trigger functions; referencing it raises error 42P01). The
+-- `with check` clause only sees the NEW row, so the user's CURRENT
+-- role is fetched with a subquery against the table. That subquery
+-- runs under the SELECT policy above: a user can read their own row
+-- (id = auth.uid()), staff can read all rows. No recursion — the
+-- SELECT policy only calls the SECURITY DEFINER helpers.
+
+drop policy if exists "profiles: read own profile, staff reads all" on public.profiles;
 create policy "profiles: read own profile, staff reads all"
   on public.profiles for select
   using (id = auth.uid() or public.is_staff());
 
+drop policy if exists "profiles: insert own profile" on public.profiles;
 create policy "profiles: insert own profile"
   on public.profiles for insert
   with check (id = auth.uid() or public.is_admin());
 
 -- Users can edit their own row but NOT their own role; only admins
 -- can change roles.
+drop policy if exists "profiles: update own profile, only admins change roles" on public.profiles;
 create policy "profiles: update own profile, only admins change roles"
   on public.profiles for update
   using (id = auth.uid() or public.is_admin())
-  with check ((id = auth.uid() and role = old.role) or public.is_admin());
+  with check (
+    public.is_admin()
+    or (
+      id = auth.uid()
+      and role = (
+        select p.role from public.profiles p where p.id = auth.uid()
+      )
+    )
+  );
 
+drop policy if exists "profiles: admin delete" on public.profiles;
 create policy "profiles: admin delete"
   on public.profiles for delete
   using (public.is_admin());
@@ -410,19 +439,23 @@ create policy "profiles: admin delete"
 -- ── site_settings ────────────────────────────────────────────────────
 alter table public.site_settings enable row level security;
 
+drop policy if exists "settings: public read" on public.site_settings;
 create policy "settings: public read"
   on public.site_settings for select
   using (true);
 
+drop policy if exists "settings: staff insert" on public.site_settings;
 create policy "settings: staff insert"
   on public.site_settings for insert
   with check (public.is_staff());
 
+drop policy if exists "settings: staff update" on public.site_settings;
 create policy "settings: staff update"
   on public.site_settings for update
   using (public.is_staff())
   with check (public.is_staff());
 
+drop policy if exists "settings: admin delete" on public.site_settings;
 create policy "settings: admin delete"
   on public.site_settings for delete
   using (public.is_admin());
@@ -430,19 +463,23 @@ create policy "settings: admin delete"
 -- ── destinations ─────────────────────────────────────────────────────
 alter table public.destinations enable row level security;
 
+drop policy if exists "destinations: public reads published, staff reads all" on public.destinations;
 create policy "destinations: public reads published, staff reads all"
   on public.destinations for select
   using (is_published or public.is_staff());
 
+drop policy if exists "destinations: staff insert" on public.destinations;
 create policy "destinations: staff insert"
   on public.destinations for insert
   with check (public.is_staff());
 
+drop policy if exists "destinations: staff update" on public.destinations;
 create policy "destinations: staff update"
   on public.destinations for update
   using (public.is_staff())
   with check (public.is_staff());
 
+drop policy if exists "destinations: staff delete" on public.destinations;
 create policy "destinations: staff delete"
   on public.destinations for delete
   using (public.is_staff());
@@ -450,19 +487,23 @@ create policy "destinations: staff delete"
 -- ── tours ─────────────────────────────────────────────────────────────
 alter table public.tours enable row level security;
 
+drop policy if exists "tours: public reads published, staff reads all" on public.tours;
 create policy "tours: public reads published, staff reads all"
   on public.tours for select
   using (is_published or public.is_staff());
 
+drop policy if exists "tours: staff insert" on public.tours;
 create policy "tours: staff insert"
   on public.tours for insert
   with check (public.is_staff());
 
+drop policy if exists "tours: staff update" on public.tours;
 create policy "tours: staff update"
   on public.tours for update
   using (public.is_staff())
   with check (public.is_staff());
 
+drop policy if exists "tours: staff delete" on public.tours;
 create policy "tours: staff delete"
   on public.tours for delete
   using (public.is_staff());
@@ -472,6 +513,7 @@ create policy "tours: staff delete"
 -- tour is published.
 alter table public.tour_itinerary enable row level security;
 
+drop policy if exists "itinerary: public reads when parent tour published" on public.tour_itinerary;
 create policy "itinerary: public reads when parent tour published"
   on public.tour_itinerary for select
   using (
@@ -482,15 +524,18 @@ create policy "itinerary: public reads when parent tour published"
     )
   );
 
+drop policy if exists "itinerary: staff insert" on public.tour_itinerary;
 create policy "itinerary: staff insert"
   on public.tour_itinerary for insert
   with check (public.is_staff());
 
+drop policy if exists "itinerary: staff update" on public.tour_itinerary;
 create policy "itinerary: staff update"
   on public.tour_itinerary for update
   using (public.is_staff())
   with check (public.is_staff());
 
+drop policy if exists "itinerary: staff delete" on public.tour_itinerary;
 create policy "itinerary: staff delete"
   on public.tour_itinerary for delete
   using (public.is_staff());
@@ -498,6 +543,7 @@ create policy "itinerary: staff delete"
 -- ── tour_departures ───────────────────────────────────────────────────
 alter table public.tour_departures enable row level security;
 
+drop policy if exists "departures: public reads when parent tour published" on public.tour_departures;
 create policy "departures: public reads when parent tour published"
   on public.tour_departures for select
   using (
@@ -508,15 +554,18 @@ create policy "departures: public reads when parent tour published"
     )
   );
 
+drop policy if exists "departures: staff insert" on public.tour_departures;
 create policy "departures: staff insert"
   on public.tour_departures for insert
   with check (public.is_staff());
 
+drop policy if exists "departures: staff update" on public.tour_departures;
 create policy "departures: staff update"
   on public.tour_departures for update
   using (public.is_staff())
   with check (public.is_staff());
 
+drop policy if exists "departures: staff delete" on public.tour_departures;
 create policy "departures: staff delete"
   on public.tour_departures for delete
   using (public.is_staff());
@@ -527,19 +576,23 @@ create policy "departures: staff delete"
 -- public.
 alter table public.bookings enable row level security;
 
+drop policy if exists "bookings: public can submit" on public.bookings;
 create policy "bookings: public can submit"
   on public.bookings for insert
   with check (true);
 
+drop policy if exists "bookings: staff read" on public.bookings;
 create policy "bookings: staff read"
   on public.bookings for select
   using (public.is_staff());
 
+drop policy if exists "bookings: staff update status" on public.bookings;
 create policy "bookings: staff update status"
   on public.bookings for update
   using (public.is_staff())
   with check (public.is_staff());
 
+drop policy if exists "bookings: admin delete" on public.bookings;
 create policy "bookings: admin delete"
   on public.bookings for delete
   using (public.is_admin());
@@ -547,19 +600,23 @@ create policy "bookings: admin delete"
 -- ── inquiries ─────────────────────────────────────────────────────────
 alter table public.inquiries enable row level security;
 
+drop policy if exists "inquiries: public can submit" on public.inquiries;
 create policy "inquiries: public can submit"
   on public.inquiries for insert
   with check (true);
 
+drop policy if exists "inquiries: staff read" on public.inquiries;
 create policy "inquiries: staff read"
   on public.inquiries for select
   using (public.is_staff());
 
+drop policy if exists "inquiries: staff update" on public.inquiries;
 create policy "inquiries: staff update"
   on public.inquiries for update
   using (public.is_staff())
   with check (public.is_staff());
 
+drop policy if exists "inquiries: admin delete" on public.inquiries;
 create policy "inquiries: admin delete"
   on public.inquiries for delete
   using (public.is_admin());
@@ -567,19 +624,23 @@ create policy "inquiries: admin delete"
 -- ── testimonials ──────────────────────────────────────────────────────
 alter table public.testimonials enable row level security;
 
+drop policy if exists "testimonials: public reads published, staff reads all" on public.testimonials;
 create policy "testimonials: public reads published, staff reads all"
   on public.testimonials for select
   using (is_published or public.is_staff());
 
+drop policy if exists "testimonials: staff insert" on public.testimonials;
 create policy "testimonials: staff insert"
   on public.testimonials for insert
   with check (public.is_staff());
 
+drop policy if exists "testimonials: staff update" on public.testimonials;
 create policy "testimonials: staff update"
   on public.testimonials for update
   using (public.is_staff())
   with check (public.is_staff());
 
+drop policy if exists "testimonials: staff delete" on public.testimonials;
 create policy "testimonials: staff delete"
   on public.testimonials for delete
   using (public.is_staff());
@@ -587,6 +648,7 @@ create policy "testimonials: staff delete"
 -- ── blog_posts ────────────────────────────────────────────────────────
 alter table public.blog_posts enable row level security;
 
+drop policy if exists "blog: public reads published, staff reads all" on public.blog_posts;
 create policy "blog: public reads published, staff reads all"
   on public.blog_posts for select
   using (
@@ -594,15 +656,18 @@ create policy "blog: public reads published, staff reads all"
     or public.is_staff()
   );
 
+drop policy if exists "blog: staff insert" on public.blog_posts;
 create policy "blog: staff insert"
   on public.blog_posts for insert
   with check (public.is_staff());
 
+drop policy if exists "blog: staff update" on public.blog_posts;
 create policy "blog: staff update"
   on public.blog_posts for update
   using (public.is_staff())
   with check (public.is_staff());
 
+drop policy if exists "blog: staff delete" on public.blog_posts;
 create policy "blog: staff delete"
   on public.blog_posts for delete
   using (public.is_staff());
@@ -610,27 +675,31 @@ create policy "blog: staff delete"
 -- ── faqs ──────────────────────────────────────────────────────────────
 alter table public.faqs enable row level security;
 
+drop policy if exists "faqs: public reads published, staff reads all" on public.faqs;
 create policy "faqs: public reads published, staff reads all"
   on public.faqs for select
   using (is_published or public.is_staff());
 
+drop policy if exists "faqs: staff insert" on public.faqs;
 create policy "faqs: staff insert"
   on public.faqs for insert
   with check (public.is_staff());
 
+drop policy if exists "faqs: staff update" on public.faqs;
 create policy "faqs: staff update"
   on public.faqs for update
   using (public.is_staff())
   with check (public.is_staff());
 
+drop policy if exists "faqs: staff delete" on public.faqs;
 create policy "faqs: staff delete"
   on public.faqs for delete
   using (public.is_staff());
 
--- END FILE: 0004_rls_policies.sql
+-- END FILE: supabase/migrations/0004_rls_policies.sql
 
 -- ═══════════════════════════════════════════════════════════════════
--- BEGIN FILE: 0005_storage_bucket.sql
+-- BEGIN FILE: supabase/migrations/0005_storage_bucket.sql
 -- ═══════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════
@@ -652,35 +721,42 @@ on conflict (id) do nothing;
 
 -- Policies on storage.objects, scoped to the "media" bucket.
 -- NOTE: storage.objects already has RLS enabled by Supabase.
+-- Rerun-safe: policies are dropped first (metadata only).
 
+drop policy if exists "media: public read" on storage.objects;
 create policy "media: public read"
   on storage.objects for select
   using (bucket_id = 'media');
 
+drop policy if exists "media: staff upload" on storage.objects;
 create policy "media: staff upload"
   on storage.objects for insert
   with check (bucket_id = 'media' and public.is_staff());
 
+drop policy if exists "media: staff update" on storage.objects;
 create policy "media: staff update"
   on storage.objects for update
   using (bucket_id = 'media' and public.is_staff())
   with check (bucket_id = 'media' and public.is_staff());
 
+drop policy if exists "media: staff delete" on storage.objects;
 create policy "media: staff delete"
   on storage.objects for delete
   using (bucket_id = 'media' and public.is_staff());
 
--- END FILE: 0005_storage_bucket.sql
+-- END FILE: supabase/migrations/0005_storage_bucket.sql
 
 -- ═══════════════════════════════════════════════════════════════════
--- BEGIN FILE: seed.sql
+-- BEGIN FILE: supabase/seed.sql
 -- ═══════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════
 -- SiteWib — Seed data: "Atlas Voyages" (FICTIONAL demo agency)
 --
 -- Run AFTER migrations 0001–0005, once, in the Supabase SQL Editor.
--- Safe to re-run: every insert uses ON CONFLICT DO NOTHING.
+-- Safe to re-run: keyed inserts use ON CONFLICT DO NOTHING; tables
+-- without a natural unique key (testimonials, faqs, tour_departures)
+-- use a NOT EXISTS guard instead.
 -- Contains NO real client data by design — it exists to be replaced.
 -- ═══════════════════════════════════════════════════════════════════
 
@@ -788,6 +864,9 @@ where t.slug = 'fes-meknes-2-jours'
 on conflict (tour_id, day_number) do nothing;
 
 -- ── Departures: Sahara tour (scheduled dates) ────────────────────────
+-- (tour_departures has no unique key, so ON CONFLICT can never fire —
+--  the NOT EXISTS guard, like the one used for testimonials/faqs,
+--  keeps the seed safe to re-run.)
 insert into public.tour_departures (tour_id, start_date, end_date, price_mad, max_participants)
 select t.id, d.start_date, d.end_date, d.price, d.max_pax
 from public.tours t
@@ -797,6 +876,7 @@ join (values
   (date '2027-05-10', date '2027-05-12', 1890.00, 12)
 ) as d(start_date, end_date, price, max_pax) on true
 where t.slug = 'sahara-merzouga-3-jours'
+  and not exists (select 1 from public.tour_departures)
 on conflict do nothing;
 
 -- ── Testimonials ─────────────────────────────────────────────────────
@@ -834,5 +914,5 @@ insert into public.blog_posts (slug, title_fr, excerpt_fr, content_fr, is_publis
    true, now())
 on conflict (slug) do nothing;
 
--- END FILE: seed.sql
+-- END FILE: supabase/seed.sql
 

@@ -9,7 +9,7 @@
 -- One row per staff member (admin or editor). Rows are created
 -- automatically when a user is added in Supabase → Authentication →
 -- Users (see the trigger at the bottom of this block).
-create table public.profiles (
+create table if not exists public.profiles (
   id          uuid primary key references auth.users (id) on delete cascade,
   full_name   text not null default 'Membre',
   role        text not null default 'editor' check (role in ('admin', 'editor')),
@@ -37,6 +37,7 @@ begin
 end;
 $$;
 
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
@@ -45,7 +46,7 @@ create trigger on_auth_user_created
 -- The white-label source of truth: ALL client branding, colors,
 -- contact and social data live in this single row. The check on `id`
 -- guarantees the table can never contain more than one row.
-create table public.site_settings (
+create table if not exists public.site_settings (
   id                 int primary key default 1 check (id = 1),
   agency_name        text not null default 'Atlas Voyages',
   tagline            text,

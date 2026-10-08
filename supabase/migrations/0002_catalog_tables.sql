@@ -6,7 +6,7 @@
 
 -- ── destinations ─────────────────────────────────────────────────────
 -- Regions the agency covers (Marrakech, Sahara, Chefchaouen, …).
-create table public.destinations (
+create table if not exists public.destinations (
   id             uuid primary key default gen_random_uuid(),
   slug           text unique not null,
   name_fr        text not null,
@@ -25,7 +25,7 @@ comment on table public.destinations is
 
 -- ── tours ────────────────────────────────────────────────────────────
 -- The core product: a tour or travel package.
-create table public.tours (
+create table if not exists public.tours (
   id                  uuid primary key default gen_random_uuid(),
   destination_id     uuid references public.destinations (id) on delete set null,
   slug                text unique not null,
@@ -58,8 +58,8 @@ create table public.tours (
 comment on table public.tours is
   'Core product: tours/packages. Draft until is_published, shown on the home page when is_featured.';
 
-create index tours_published_featured_idx on public.tours (is_published, is_featured);
-create index tours_destination_idx on public.tours (destination_id);
+create index if not exists tours_published_featured_idx on public.tours (is_published, is_featured);
+create index if not exists tours_destination_idx on public.tours (destination_id);
 
 -- Keep updated_at current automatically on every UPDATE.
 create or replace function public.set_updated_at()
@@ -72,13 +72,14 @@ begin
 end;
 $$;
 
+drop trigger if exists tours_set_updated_at on public.tours;
 create trigger tours_set_updated_at
   before update on public.tours
   for each row execute function public.set_updated_at();
 
 -- ── tour_itinerary ───────────────────────────────────────────────────
 -- Day-by-day program of a tour. Deleted with its tour (cascade).
-create table public.tour_itinerary (
+create table if not exists public.tour_itinerary (
   id             uuid primary key default gen_random_uuid(),
   tour_id        uuid not null references public.tours (id) on delete cascade,
   day_number     int not null check (day_number >= 1),
@@ -96,7 +97,7 @@ comment on table public.tour_itinerary is
 
 -- ── tour_departures ──────────────────────────────────────────────────
 -- Scheduled departure dates for a tour, with optional per-date pricing.
-create table public.tour_departures (
+create table if not exists public.tour_departures (
   id                  uuid primary key default gen_random_uuid(),
   tour_id             uuid not null references public.tours (id) on delete cascade,
   start_date          date not null,

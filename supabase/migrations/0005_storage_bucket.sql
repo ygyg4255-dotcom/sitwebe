@@ -17,20 +17,25 @@ on conflict (id) do nothing;
 
 -- Policies on storage.objects, scoped to the "media" bucket.
 -- NOTE: storage.objects already has RLS enabled by Supabase.
+-- Rerun-safe: policies are dropped first (metadata only).
 
+drop policy if exists "media: public read" on storage.objects;
 create policy "media: public read"
   on storage.objects for select
   using (bucket_id = 'media');
 
+drop policy if exists "media: staff upload" on storage.objects;
 create policy "media: staff upload"
   on storage.objects for insert
   with check (bucket_id = 'media' and public.is_staff());
 
+drop policy if exists "media: staff update" on storage.objects;
 create policy "media: staff update"
   on storage.objects for update
   using (bucket_id = 'media' and public.is_staff())
   with check (bucket_id = 'media' and public.is_staff());
 
+drop policy if exists "media: staff delete" on storage.objects;
 create policy "media: staff delete"
   on storage.objects for delete
   using (bucket_id = 'media' and public.is_staff());
