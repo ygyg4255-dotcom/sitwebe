@@ -56,12 +56,27 @@ To connect a real database:
    3. `supabase/migrations/0003_engagement_tables.sql`
    4. `supabase/migrations/0004_rls_policies.sql`
    5. `supabase/migrations/0005_storage_bucket.sql`
+
+   **Shortcut:** on a *fresh* project you can instead paste
+   `supabase/setup_all.sql` ONCE — a generated bundle of all five
+   migrations **plus** the seed below, in the correct order. Do not
+   hand-edit that file; it is regenerated from the migrations.
 3. **Seed the demo content:** run `supabase/seed.sql` the same way
    (safe to re-run — every insert is idempotent).
-4. **Copy the keys** from `Project Settings → API` into `.env.local`:
+4. **Expose the tables to the Data API.** If the project was created
+   with *"Automatically expose new tables"* **disabled** (recommended
+   for security), the 11 new tables are not reachable through the API
+   yet. Go to `Project Settings → Data API → Manage exposed tables`
+   and expose: `profiles`, `site_settings`, `destinations`, `tours`,
+   `tour_itinerary`, `tour_departures`, `bookings`, `inquiries`,
+   `testimonials`, `blog_posts`, `faqs`. (RLS protects them all —
+   exposure only *allows* the API to apply RLS-filtered queries.)
+   Alternatively, enable *"Automatically expose new tables"* **before**
+   step 2 and skip this step.
+5. **Copy the keys** from `Project Settings → API` into `.env.local`:
    - `NEXT_PUBLIC_SUPABASE_URL` → Project URL
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` → anon public key
-5. **Create the first admin user:**
+6. **Create the first admin user:**
    `Authentication → Users → Add user` (email + password), then run
    this once in the SQL Editor with the user's UUID
    (shown on the user's row):
@@ -69,7 +84,7 @@ To connect a real database:
    update public.profiles set role = 'admin' where id = '<user-uuid>';
    ```
    New users get the `editor` role by default — least privilege.
-6. **Verify everything:** `npm run verify:db` — it connects with the
+7. **Verify everything:** `npm run verify:db` — it connects with the
    anonymous key (like a public visitor) and proves the seed data is
    readable and RLS hides drafts, bookings and profiles.
 
@@ -109,6 +124,7 @@ lib/
   validation.ts       # Zod schemas (French error messages)
 supabase/
   migrations/          # 0001–0005 (run in order, then seed.sql)
+  setup_all.sql        # generated one-paste bundle: all migrations + seed
   seed.sql            # Atlas Voyages demo data (idempotent)
 scripts/
   verify-db.mjs        # Database + RLS verification (npm run verify:db)
