@@ -1,0 +1,18 @@
+/**
+ * Form text input. Used by the contact and booking forms (Phase 4).
+ */
+import type { ComponentPropsWithoutRef } from "react";
+
+export function Input({ className, ...props }: ComponentPropsWithoutRef<"input">) {
+  return (
+    <input
+      className={[
+        "w-full rounded-xl border border-brand-border bg-surface px-4 py-2.5 text-ink",
+        "placeholder:text-muted/70",
+        "focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary/40",
+        className ?? "",
+      ].join(" ")}
+      {...props}
+    />
+  );
+}

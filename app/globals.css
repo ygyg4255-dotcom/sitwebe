@@ -1,0 +1,57 @@
+/**
+ * ─────────────────────────────────────────────────────────────────────────
+ * SiteWib DESIGN TOKENS — Terracotta / Sahara identity
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * The `:root` block below holds the DEFAULT brand values (pre-render
+ * fallback). At runtime they are overridden by the white-label branding
+ * contract — see `lib/config/site.ts` (brandingToCssVars) which applies
+ * the same variables inline on <html>.
+ *
+ * The `@theme inline` block maps each variable to a Tailwind utility:
+ *   --brand-primary  →  bg-primary, text-primary, border-primary, …
+ *   --font-display   →  font-display (Marcellus, elegant headings)
+ *   --font-sans      →  font-sans (Inter, body text)
+ *
+ * Re-theming a client = changing lib/config/site.ts (Phase 4: the
+ * `site_settings` database table). No component or CSS edits required.
+ */
+@import "tailwindcss";
+
+:root {
+  --brand-primary: #c0532e; /* Terracotta — main brand color */
+  --brand-primary-dark: #9a3f1f; /* Hover/darker terracotta */
+  --brand-accent: #d9a441; /* Saffron gold — highlights, ratings */
+  --brand-secondary: #2e6e6a; /* Atlas teal — secondary actions */
+  --brand-ink: #2b2118; /* Warm near-black — text */
+  --brand-paper: #faf5ec; /* Warm off-white — page background */
+  --brand-sand: #f1e5d0; /* Sand — section backgrounds */
+  --brand-surface: #fffdf8; /* Card surface */
+  --brand-muted: #7c6f60; /* Muted text */
+  --brand-border: #e5d9c5; /* Hairline borders */
+}
+
+@theme inline {
+  --color-primary: var(--brand-primary);
+  --color-primary-dark: var(--brand-primary-dark);
+  --color-accent: var(--brand-accent);
+  --color-secondary: var(--brand-secondary);
+  --color-ink: var(--brand-ink);
+  --color-paper: var(--brand-paper);
+  --color-sand: var(--brand-sand);
+  --color-surface: var(--brand-surface);
+  --color-muted: var(--brand-muted);
+  --color-brand-border: var(--brand-border);
+  --font-display: var(--font-marcellus), ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--brand-paper);
+  color: var(--brand-ink);
+}
+
+::selection {
+  background-color: var(--brand-accent);
+  color: var(--brand-ink);
+}
