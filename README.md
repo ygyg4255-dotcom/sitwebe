@@ -34,7 +34,7 @@ AR switches the layout to right-to-left).
 | `npm run lint` | ESLint (Next.js core-web-vitals + TypeScript rules) |
 | `npm run typecheck` | TypeScript check without emitting files |
 | `npm run bundle` | Regenerate `supabase/setup_all.sql` from the migrations + seed (with consistency checks) |
-| `npm run verify:db` | Verify the live database: seed data + RLS negative tests |
+| `npm run verify:db` | Verify the live database: seed data, RLS negative tests, storage bucket, auth endpoint |
 
 ### Environment variables
 
@@ -90,7 +90,9 @@ To connect a real database:
    New users get the `editor` role by default — least privilege.
 7. **Verify everything:** `npm run verify:db` — it connects with the
    anonymous key (like a public visitor) and proves the seed data is
-   readable and RLS hides drafts, bookings and profiles.
+   readable, RLS hides drafts, bookings and profiles, the storage
+   bucket is public-readable and the auth endpoint refuses bad
+   credentials.
 
 ### Security model (RLS)
 

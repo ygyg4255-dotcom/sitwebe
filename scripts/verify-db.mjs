@@ -9,7 +9,9 @@
  * It connects with the ANONYMOUS key (exactly like the public site
  * does) and checks:
  *   1. every public read returns the seeded data,
- *   2. RLS actually hides what it must hide (negative tests).
+ *   2. RLS actually hides what it must hide (negative tests),
+ *   3. the storage bucket is readable anonymously,
+ *   4. the auth endpoint is live and refuses bad credentials.
  *
  * Exits non-zero if anything fails.
  */
@@ -165,13 +167,32 @@ await check("RLS: bookings are NOT readable anonymously", async () => {
 });
 
 await check("RLS: staff data is NOT writable anonymously", async () => {
-  const { error } = await supabase
+  // Under the "tours: staff update" policy an anonymous visitor sees
+  // ZERO rows through the USING clause (is_staff()), so PostgREST
+  // does NOT have to return an error — a "success" with 0 affected
+  // rows is the EXPECTED behavior. The real invariant is therefore:
+  // the row must be unchanged after the attempt.
+  await supabase
     .from("tours")
     .update({ is_published: false })
     .eq("slug", "sahara-merzouga-3-jours");
-  return error === null
-    ? "anon UPDATED a tour — RLS NOT working!"
-    : true; // being refused is exactly what we want
+  const { data: tour } = await supabase
+    .from("tours")
+    .select("is_published")
+    .eq("slug", "sahara-merzouga-3-jours")
+    .maybeSingle();
+  if (!tour) return "sahara tour not found — seed incomplete";
+  if (tour.is_published === false) {
+    // RLS broken: the anonymous write went through. Restore and fail.
+    await supabase
+      .from("tours")
+      .update({ is_published: true })
+      .eq("slug", "sahara-merzouga-3-jours");
+    return "anon CHANGED a tour — RLS NOT working!";
+  }
+  // Row unchanged — correct. (An explicit refusal like 42501 is fine
+  // too; with this policy design it simply is not guaranteed.)
+  return true;
 });
 
 await check("RLS: profiles are NOT readable anonymously", async () => {
@@ -182,9 +203,33 @@ await check("RLS: profiles are NOT readable anonymously", async () => {
     : `anon can see ${data.length} profiles — RLS NOT working!`;
 });
 
+// ── Storage (migration 0005: public "media" bucket) ──────────────────────
+await check("storage: 'media' bucket readable anonymously", async () => {
+  // Lists the bucket contents with the anon key — allowed only if the
+  // bucket exists AND the "media: public read" policy is in place.
+  const { data, error } = await supabase.storage.from("media").list();
+  if (error) return error.message;
+  return Array.isArray(data) ? true : "unexpected storage response";
+});
+
+// ── Auth ──────────────────────────────────────────────────────────────────
+await check("auth: endpoint live, bad login refused", async () => {
+  // Harmless negative test: a wrong password must NEVER produce a
+  // session. Proves the Auth service is reachable and rejecting
+  // credentials without creating any user.
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: "phase2-verification@sitewib.invalid",
+    password: "definitely-not-the-right-password",
+  });
+  if (error) return true; // being refused is exactly what we want
+  return data.session
+    ? "wrong credentials were accepted — AUTH BROKEN!"
+    : true; // no session without email confirmation — fine
+});
+
 console.log(
   failures === 0
-    ? "\nAll checks passed ✔ (database schema, seed data and RLS verified)\n"
+    ? "\nAll checks passed ✔ (schema, seed data, RLS, storage and auth verified)\n"
     : `\n${failures} check(s) FAILED — fix before continuing\n`
 );
 process.exit(failures === 0 ? 0 : 1);
