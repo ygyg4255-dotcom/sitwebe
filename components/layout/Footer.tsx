@@ -31,6 +31,10 @@ export async function Footer({ locale, navLabels, footer, branding }: FooterProp
     { href: `/${locale}`, label: navLabels.home },
     { href: `/${locale}/tours`, label: navLabels.tours },
     { href: `/${locale}/destinations`, label: navLabels.destinations },
+    { href: `/${locale}/blog`, label: navLabels.blog },
+    { href: `/${locale}/gallery`, label: navLabels.gallery },
+    { href: `/${locale}/testimonials`, label: navLabels.testimonials },
+    { href: `/${locale}/faq`, label: navLabels.faq },
     { href: `/${locale}/about`, label: navLabels.about },
     { href: `/${locale}/contact`, label: navLabels.contact },
   ];

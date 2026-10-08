@@ -1,10 +1,11 @@
 /**
- * "Popular tours" section — three demo tour cards.
- * Phase 3 replaces the demo data with published tours from Supabase.
+ * "Popular tours" section — published + featured tours from Supabase
+ * (cached query, tag "tours"). Renders nothing when the database has no
+ * featured tour yet (graceful empty state for the homepage).
  */
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/messages/fr";
-import { demoTours } from "@/lib/demo/content";
+import { getFeaturedTours } from "@/lib/queries/tours";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ButtonLink } from "@/components/ui/Button";
@@ -15,8 +16,11 @@ interface FeaturedToursProps {
   dict: Dictionary;
 }
 
-export function FeaturedTours({ locale, dict }: FeaturedToursProps) {
+export async function FeaturedTours({ locale, dict }: FeaturedToursProps) {
   const content = dict.home.featured;
+  const tours = await getFeaturedTours(3);
+
+  if (tours.length === 0) return null;
 
   return (
     <Container className="py-16 sm:py-20">
@@ -27,9 +31,9 @@ export function FeaturedTours({ locale, dict }: FeaturedToursProps) {
       />
 
       <div className="mt-12 grid gap-6 md:grid-cols-3">
-        {demoTours.map((tour) => (
+        {tours.map((tour) => (
           <TourCard
-            key={tour.slug}
+            key={tour.id}
             locale={locale}
             tour={tour}
             labels={dict.common}

@@ -14,6 +14,10 @@ const en: Dictionary = {
     home: "Home",
     tours: "Tours",
     destinations: "Destinations",
+    blog: "Blog",
+    gallery: "Gallery",
+    testimonials: "Reviews",
+    faq: "FAQ",
     about: "About",
     contact: "Contact",
     book: "Book now",
@@ -53,12 +57,13 @@ const en: Dictionary = {
       eyebrow: "Traveler reviews",
       title: "They traveled with us",
       subtitle: "Our travelers' trust is our best calling card.",
+      seeAll: "All reviews",
     },
     cta: {
       title: "Ready for an unforgettable adventure?",
       subtitle:
         "Tell us about your travel plans — guaranteed reply within 24 hours.",
-      primaryCta: "Chat on WhatsApp",
+      primaryCta: "Write on WhatsApp",
       secondaryCta: "Request a quote",
     },
   },
@@ -67,31 +72,136 @@ const en: Dictionary = {
     currency: "MAD",
     perPerson: "/ person",
     days: "days",
+    day: "day",
     maxPeople: "people max",
+    seatsLeft: "seats left",
     difficulty: {
       easy: "Easy",
       moderate: "Moderate",
       challenging: "Challenging",
     },
   },
+  tourDetail: {
+    itineraryTitle: "Day-by-day itinerary",
+    dayLabel: "Day",
+    includedTitle: "What's included",
+    excludedTitle: "Not included",
+    departuresTitle: "Scheduled departures",
+    departureLabel: "Departure",
+    returnLabel: "Return",
+    departurePoint: "Departure point",
+    returnPoint: "Return point",
+    noDepartures:
+      "No scheduled departures yet — contact us to arrange yours.",
+    bookCta: "Book this tour",
+    askCta: "Ask a question",
+    otherTours: "More tours to discover",
+  },
+  destinationDetail: {
+    toursTitle: "Our tours in this region",
+    noTours: "No tours in this region yet.",
+    backToDestinations: "All destinations",
+  },
+  pages: {
+    tours: {
+      title: "Our tours",
+      subtitle:
+        "Desert, imperial cities, mountains and the Atlantic coast — small-group trips led by local guides.",
+      empty: "No tours are published yet. Come back soon!",
+    },
+    destinations: {
+      title: "Destinations",
+      subtitle:
+        "From the Sahara to the Atlas valleys, discover the regions we take you to.",
+      empty: "No destinations are published yet.",
+    },
+    about: {
+      title: "About us",
+      subtitle:
+        "A local agency, a passionate team, one goal: make you fall in love with Morocco.",
+      storyTitle: "Our story",
+      story: [
+        "Atlas Voyages was born in Marrakech from a simple belief: Morocco should be experienced from the inside. Our founders, lifelong mountain guides, wanted to build a human-sized agency where every trip is designed hand in hand with the travelers.",
+        "Today our team of guides, drivers and Berber cooks runs dozens of tours every year — from the Merzouga desert to the Ouzoud falls — always in small groups, never more than twelve people.",
+      ],
+      valuesTitle: "Our values",
+      values: [
+        {
+          title: "Authenticity",
+          description:
+            "We sleep in family homes, eat in the souks and take you where travelers don't go alone.",
+        },
+        {
+          title: "Small groups",
+          description:
+            "Twelve people maximum: the right size for genuine encounters and stress-free logistics.",
+        },
+        {
+          title: "Local guides",
+          description:
+            "Our guides were born in the regions they show you — every dune, every alley has a story.",
+        },
+      ],
+    },
+    contact: {
+      title: "Contact",
+      subtitle: "Let's talk about your travel plans — guaranteed reply within 24 hours.",
+      phoneTitle: "Phone",
+      emailTitle: "Email",
+      addressTitle: "Address",
+      hoursTitle: "Opening hours",
+      hours: "Monday–Saturday, 9 am–7 pm (GMT+1)",
+      socialTitle: "Follow us",
+      whatsappCta: "Write on WhatsApp",
+      quoteCta: "Request a quote",
+      formNotice:
+        "Our online inquiry form is coming soon — in the meantime, reach us on WhatsApp or by email.",
+    },
+    blog: {
+      title: "Blog",
+      subtitle: "Preparation tips, travel journals and behind-the-scenes stories.",
+      empty: "No articles are published yet.",
+      readMore: "Read the article",
+      backToBlog: "Back to the blog",
+    },
+    gallery: {
+      title: "Gallery",
+      subtitle: "A glimpse of the landscapes and encounters awaiting you.",
+      empty: "No images are published yet.",
+      destinationsLabel: "Our regions",
+      toursLabel: "Our tours",
+    },
+    testimonials: {
+      title: "Traveler reviews",
+      subtitle: "Our travelers' trust is our best calling card.",
+      empty: "No reviews are published yet.",
+      averageLabel: "Average rating",
+      ratingSuffix: "/5",
+    },
+    faq: {
+      title: "Frequently asked questions",
+      subtitle: "Everything you need to know before traveling with us.",
+      empty: "No questions are published yet.",
+    },
+  },
+  loading: "Loading…",
+  error: {
+    title: "Something went wrong",
+    description:
+      "Sorry, an unexpected error occurred. Please try again in a moment.",
+    retry: "Try again",
+  },
   footer: {
     tagline:
-      "A local, attentive travel agency crafting tailor-made journeys across Morocco.",
+      "Local travel agency, attentive and creative, crafting tailor-made tours in Morocco.",
     contactTitle: "Contact",
     linksTitle: "Quick links",
     followTitle: "Follow us",
     rights: "All rights reserved.",
   },
-  pages: {
-    tours: { title: "Tours" },
-    destinations: { title: "Destinations" },
-    about: { title: "About" },
-    contact: { title: "Contact" },
-  },
-  underConstruction: "This page will be completed in a later phase of the project.",
   notFound: {
     title: "Page not found",
-    description: "Sorry, the page you are looking for does not exist or has moved.",
+    description: "Sorry, the page you are looking for does not exist or has been moved.",
     cta: "Back to home",
   },
 };

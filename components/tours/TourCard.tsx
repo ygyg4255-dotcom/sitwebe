@@ -1,55 +1,78 @@
 /**
- * Tour preview card used on the homepage (and the tours list in Phase 3).
- * The whole card links to the tours page — in Phase 3 it links to the
- * individual tour detail page (`/${locale}/tours/${tour.slug}`).
+ * Tour preview card — used on the homepage and the tours list.
+ * Links to the individual tour detail page. Title, summary and price are
+ * locale-aware with a French fallback (lib/i18n/content.ts).
  */
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/messages/fr";
-import type { DemoTour } from "@/lib/demo/content";
+import { localizedText } from "@/lib/i18n/content";
+import { formatPrice } from "@/lib/format";
+import type { TourRow } from "@/lib/queries/tours";
 import { Badge } from "@/components/ui/Badge";
-import { PhotoPlaceholder } from "@/components/ui/PhotoPlaceholder";
+import { PhotoPlaceholder, photoVariantFor } from "@/components/ui/PhotoPlaceholder";
 
 interface TourCardProps {
   locale: Locale;
-  tour: DemoTour;
+  tour: TourRow;
   labels: Dictionary["common"];
 }
 
 export function TourCard({ locale, tour, labels }: TourCardProps) {
+  const title = localizedText(
+    locale,
+    tour.title_fr,
+    tour.title_en,
+    tour.title_ar
+  );
+  const summary = localizedText(
+    locale,
+    tour.summary_fr,
+    tour.summary_en,
+    tour.summary_ar
+  );
+  const difficultyLabel =
+    labels.difficulty[tour.difficulty as keyof typeof labels.difficulty] ??
+    tour.difficulty;
+
   return (
     <Link
-      href={`/${locale}/tours`}
-      className="group block overflow-hidden rounded-2xl border border-brand-border bg-surface shadow-sm transition-shadow hover:shadow-md"
+      href={`/${locale}/tours/${tour.slug}`}
+      className="group flex flex-col overflow-hidden rounded-2xl border border-brand-border bg-surface shadow-sm transition-shadow hover:shadow-md"
     >
       <PhotoPlaceholder
-        variant={tour.photo}
+        variant={photoVariantFor(tour.slug)}
         className="aspect-[16/10] w-full"
       />
 
-      <div className="p-5">
+      <div className="flex flex-1 flex-col p-5">
         <h3 className="font-display text-xl text-ink transition-colors group-hover:text-primary">
-          {tour.title}
+          {title}
         </h3>
-        <p className="mt-1.5 line-clamp-2 text-sm text-muted">{tour.summary}</p>
+        {summary ? (
+          <p className="mt-1.5 line-clamp-2 text-sm text-muted">{summary}</p>
+        ) : null}
 
         {/* Meta: duration, group size, difficulty */}
         <div className="mt-4 flex flex-wrap gap-2">
           <Badge variant="outline">
-            {tour.durationDays} {labels.days}
+            {tour.duration_days}{" "}
+            {tour.duration_days === 1 ? labels.day : labels.days}
           </Badge>
-          <Badge variant="outline">
-            {tour.groupSizeMax} {labels.maxPeople}
-          </Badge>
-          <Badge variant="accent">{labels.difficulty[tour.difficulty]}</Badge>
+          {tour.group_size_max ? (
+            <Badge variant="outline">
+              {tour.group_size_max} {labels.maxPeople}
+            </Badge>
+          ) : null}
+          <Badge variant="accent">{difficultyLabel}</Badge>
         </div>
 
-        {/* Price row */}
-        <div className="mt-4 flex items-center justify-between border-t border-brand-border pt-4">
+        {/* Price row — pushed to the bottom so every card aligns */}
+        <div className="mt-5 flex items-center justify-between border-t border-brand-border pt-4">
           <p className="text-sm text-muted">
             {labels.from}{" "}
             <span className="font-display text-xl text-ink">
-              {tour.priceFrom.toLocaleString("fr-FR")}
+              {formatPrice(tour.price_mad, locale)}
             </span>{" "}
             {labels.currency} {labels.perPerson}
           </p>

@@ -29,6 +29,7 @@ export function Navbar({ locale, labels, agencyName }: NavbarProps) {
     { href: `/${locale}`, label: labels.home },
     { href: `/${locale}/tours`, label: labels.tours },
     { href: `/${locale}/destinations`, label: labels.destinations },
+    { href: `/${locale}/blog`, label: labels.blog },
     { href: `/${locale}/about`, label: labels.about },
     { href: `/${locale}/contact`, label: labels.contact },
   ];

@@ -109,25 +109,40 @@ To connect a real database:
 app/
   [locale]/            # All routes are locale-prefixed: /fr, /en, /ar
     layout.tsx         # ROOT layout: fonts, lang/dir, branding CSS vars
-    page.tsx           # Homepage
+    page.tsx           # Homepage (live DB sections + JSON-LD)
     not-found.tsx      # 404 inside a locale
-    tours/ destinations/ about/ contact/   # (stubs until Phase 3)
+    loading.tsx        # Skeleton shown while a page streams
+    error.tsx          # Error boundary (client, retry button)
+    tours/page.tsx           # Catalog of all published tours
+    tours/[slug]/page.tsx    # Tour detail: itinerary, departures, …
+    destinations/page.tsx    # All destinations
+    destinations/[slug]/page.tsx  # Destination + its tours
+    about/ contact/          # Agency story / contact details
+    blog/page.tsx            # Blog index
+    blog/[slug]/page.tsx     # Article (safe Markdown rendering)
+    gallery/ testimonials/ faq/   # Photo grid / reviews / accordions
+  sitemap.ts           # Per-URL language alternates, DB-driven slugs
+  robots.ts            # robots.txt (points to the sitemap)
 proxy.ts               # Locale routing: / → /fr (Next 16 proxy convention)
 components/
   layout/             # Navbar, Footer, LocaleSwitcher
   ui/                 # Design system: Button, Card, Badge, Input, …
   home/               # Homepage sections (Hero, Tours, Testimonials, …)
-  tours/              # TourCard
+  tours/ destinations/ testimonials/ blog/  # Content cards
+  seo/JsonLd.tsx      # Escaped <script type="application/ld+json">
+  blog/Markdown.tsx   # Whitelist Markdown → React (no raw HTML)
 lib/
   config/site.ts      # ★ WHITE-LABEL BRANDING CONTRACT (read this first)
   i18n/               # Locale config + message dictionaries (fr/en/ar)
-  demo/               # Phase-1 demo content (replaced by DB in Phase 3)
+    content.ts        # localizedText(): DB text with French fallback
   types/database.ts   # ★ Typed schema for all 11 tables
   supabase/           # Server / browser / anonymous clients (env-guarded)
   queries/            # Cached read functions ("use cache" + cacheTag)
   actions/            # Server Actions (Zod-validated mutations)
   auth.ts             # getCurrentProfile / requireStaff / requireAdmin
   validation.ts       # Zod schemas (French error messages)
+  seo.ts              # Alternates/canonicals + JSON-LD builders
+  format.ts           # Per-locale Intl price & date formatting
 supabase/
   migrations/          # 0001–0005 (run in order, then seed.sql)
   setup_all.sql        # generated one-paste bundle: all migrations + seed
@@ -163,7 +178,10 @@ getBranding() → brandingToCssVars() → CSS variables on <html>
   is a compile error.
 - Arabic already renders right-to-left (`dir="rtl"`); layouts use
   logical CSS utilities (`ms-*`, `start-*`) so RTL mirrors correctly.
-- Business content is French-only until translations are scheduled.
+- Database content has French (required) + optional EN/AR columns;
+  `localizedText()` picks the locale's text and falls back to French
+  when a translation is missing. Real Arabic translations are still a
+  TODO (the ar dictionary currently holds the French reference text).
 
 ## Roadmap status
 
@@ -171,6 +189,6 @@ getBranding() → brandingToCssVars() → CSS variables on <html>
 |---|---|---|
 | 1 | Setup, design system, i18n-ready layout, homepage shell | ✅ Done |
 | 2 | Supabase database, auth, RLS, server actions | ✅ Done |
-| 3 | Public website (tours, destinations, blog, gallery, …) | ⏳ |
+| 3 | Public website (tours, destinations, blog, gallery, …) | ✅ Done |
 | 4 | Booking system + admin dashboard | ⏳ |
 | 5 | SEO hardening, security review, deployment, docs | ⏳ |

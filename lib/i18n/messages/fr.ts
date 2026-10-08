@@ -5,9 +5,9 @@
  * (en, ar) must provide the exact same keys — the TypeScript compiler
  * enforces it, so a missing translation is a build error, not a runtime bug.
  *
- * Note: dictionaries hold UI labels only. Business content (tours,
- * destinations, testimonials…) comes from the database in later phases —
- * Phase 1 uses the demo data in `lib/demo/content.ts`.
+ * Dictionaries hold UI labels and page copy only. Business content (tours,
+ * destinations, testimonials…) comes from the Supabase database (Phase 3),
+ * with per-locale columns and a French fallback (see lib/i18n/content.ts).
  */
 const fr = {
   meta: {
@@ -18,6 +18,10 @@ const fr = {
     home: "Accueil",
     tours: "Circuits",
     destinations: "Destinations",
+    blog: "Blog",
+    gallery: "Galerie",
+    testimonials: "Avis",
+    faq: "FAQ",
     about: "À propos",
     contact: "Contact",
     book: "Réserver",
@@ -58,6 +62,7 @@ const fr = {
       eyebrow: "Avis voyageurs",
       title: "Ils ont voyagé avec nous",
       subtitle: "La confiance de nos voyageurs est notre meilleure carte de visite.",
+      seeAll: "Tous les avis",
     },
     cta: {
       title: "Prêt à vivre une aventure inoubliable ?",
@@ -71,12 +76,126 @@ const fr = {
     currency: "MAD",
     perPerson: "/ pers.",
     days: "jours",
+    day: "jour",
     maxPeople: "pers. max",
+    seatsLeft: "places restantes",
     difficulty: {
       easy: "Facile",
       moderate: "Modéré",
       challenging: "Sportif",
     },
+  },
+  tourDetail: {
+    itineraryTitle: "Itinéraire jour par jour",
+    dayLabel: "Jour",
+    includedTitle: "Ce qui est inclus",
+    excludedTitle: "Non inclus",
+    departuresTitle: "Départs programmés",
+    departureLabel: "Départ",
+    returnLabel: "Retour",
+    departurePoint: "Lieu de départ",
+    returnPoint: "Lieu de retour",
+    noDepartures: "Aucun départ programmé pour le moment — contactez-nous pour organiser le vôtre.",
+    bookCta: "Réserver ce circuit",
+    askCta: "Poser une question",
+    otherTours: "D'autres circuits à découvrir",
+  },
+  destinationDetail: {
+    toursTitle: "Nos circuits dans cette région",
+    noTours: "Aucun circuit dans cette région pour le moment.",
+    backToDestinations: "Toutes les destinations",
+  },
+  pages: {
+    tours: {
+      title: "Nos circuits",
+      subtitle:
+        "Désert, villes impériales, montagnes et côte atlantique — des voyages en petits groupes, menés par des guides locaux.",
+      empty: "Aucun circuit n'est publié pour le moment. Revenez bientôt !",
+    },
+    destinations: {
+      title: "Destinations",
+      subtitle:
+        "Du Sahara aux vallées de l'Atlas, découvrez les régions où nous vous emmenons.",
+      empty: "Aucune destination n'est publiée pour le moment.",
+    },
+    about: {
+      title: "À propos",
+      subtitle:
+        "Une agence locale, une équipe passionnée, un objectif : vous faire aimer le Maroc.",
+      storyTitle: "Notre histoire",
+      story: [
+        "Atlas Voyages est née à Marrakech d'une conviction simple : le Maroc se vit de l'intérieur. Nos fondateurs, guides de montagne depuis toujours, ont voulu créer une agence à taille humaine où chaque voyage est conçu main dans la main avec les voyageurs.",
+        "Aujourd'hui, notre équipe de guides, chauffeurs et cuisiniers berbères orchestre des dizaines de circuits chaque année — du désert de Merzouga aux cascades d'Ouzoud — toujours en petits groupes, jamais plus de douze personnes.",
+      ],
+      valuesTitle: "Nos valeurs",
+      values: [
+        {
+          title: "Authenticité",
+          description:
+            "Nous dormons chez l'habitant, mangeons dans les souks et vous emmenons là où les voyageurs ne vont pas seuls.",
+        },
+        {
+          title: "Petits groupes",
+          description:
+            "Douze personnes maximum : la taille juste pour des rencontres vraies et une logistique sans stress.",
+        },
+        {
+          title: "Guides locaux",
+          description:
+            "Nos guides sont nés dans les régions qu'ils vous font découvrir — chaque dune, chaque ruelle a une histoire.",
+        },
+      ],
+    },
+    contact: {
+      title: "Contact",
+      subtitle:
+        "Parlons de votre projet de voyage — réponse garantie sous 24 h.",
+      phoneTitle: "Téléphone",
+      emailTitle: "E-mail",
+      addressTitle: "Adresse",
+      hoursTitle: "Horaires",
+      hours: "Lundi–Samedi, 9 h–19 h (GMT+1)",
+      socialTitle: "Suivez-nous",
+      whatsappCta: "Écrire sur WhatsApp",
+      quoteCta: "Demander un devis",
+      formNotice:
+        "Notre formulaire de demande en ligne arrive bientôt — en attendant, écrivez-nous sur WhatsApp ou par e-mail.",
+    },
+    blog: {
+      title: "Blog",
+      subtitle:
+        "Conseils de préparation, carnets de voyage et coulisses de l'agence.",
+      empty: "Aucun article n'est publié pour le moment.",
+      readMore: "Lire l'article",
+      backToBlog: "Retour au blog",
+    },
+    gallery: {
+      title: "Galerie",
+      subtitle: "Un aperçu des paysages et des rencontres qui vous attendent.",
+      empty: "Aucune image n'est publiée pour le moment.",
+      destinationsLabel: "Nos régions",
+      toursLabel: "Nos circuits",
+    },
+    testimonials: {
+      title: "Avis voyageurs",
+      subtitle:
+        "La confiance de nos voyageurs est notre meilleure carte de visite.",
+      empty: "Aucun avis n'est publié pour le moment.",
+      averageLabel: "Note moyenne",
+      ratingSuffix: "/5",
+    },
+    faq: {
+      title: "Questions fréquentes",
+      subtitle: "Tout ce qu'il faut savoir avant de partir avec nous.",
+      empty: "Aucune question n'est publiée pour le moment.",
+    },
+  },
+  loading: "Chargement…",
+  error: {
+    title: "Une erreur est survenue",
+    description:
+      "Désolé, une erreur inattendue s'est produite. Réessayez dans un instant.",
+    retry: "Réessayer",
   },
   footer: {
     tagline:
@@ -86,14 +205,6 @@ const fr = {
     followTitle: "Suivez-nous",
     rights: "Tous droits réservés.",
   },
-  pages: {
-    tours: { title: "Circuits" },
-    destinations: { title: "Destinations" },
-    about: { title: "À propos" },
-    contact: { title: "Contact" },
-  },
-  underConstruction:
-    "Cette page sera complétée lors d'une phase ultérieure du projet.",
   notFound: {
     title: "Page introuvable",
     description: "Désolé, la page que vous cherchez n'existe pas ou a été déplacée.",

@@ -9,6 +9,18 @@
 
 export type PhotoVariant = "terracotta" | "teal" | "gold" | "dune";
 
+const variantOrder: PhotoVariant[] = ["terracotta", "dune", "teal", "gold"];
+
+/**
+ * Deterministically picks a decorative variant from a key (usually the
+ * record slug), so the same tour/destination always shows the same scene.
+ */
+export function photoVariantFor(seed: string): PhotoVariant {
+  let sum = 0;
+  for (const ch of seed) sum += ch.charCodeAt(0);
+  return variantOrder[sum % variantOrder.length];
+}
+
 const gradients: Record<PhotoVariant, string> = {
   terracotta: "linear-gradient(135deg, #e2a06b 0%, #c0532e 55%, #8f3a1a 100%)",
   teal: "linear-gradient(135deg, #7fb8b3 0%, #2e6e6a 55%, #1d4b48 100%)",

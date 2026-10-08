@@ -1,22 +1,42 @@
 /**
- * Destinations grid — where the agency operates.
- * Phase 3 links each card to its destination page and loads
- * real destination records from Supabase.
+ * Destinations grid — published destinations from Supabase (cached query,
+ * tag "destinations"). Each card links to its destination detail page;
+ * the tour count is derived from the published tours query.
+ * Renders nothing when the database has no destination yet.
  */
-import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/messages/fr";
-import { demoDestinations } from "@/lib/demo/content";
+import { getPublishedDestinations } from "@/lib/queries/destinations";
+import { getPublishedTours } from "@/lib/queries/tours";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { PhotoPlaceholder } from "@/components/ui/PhotoPlaceholder";
+import { DestinationCard } from "@/components/destinations/DestinationCard";
 
 interface DestinationsStripProps {
   locale: Locale;
   content: Dictionary["home"]["destinations"];
 }
 
-export function DestinationsStrip({ locale, content }: DestinationsStripProps) {
+export async function DestinationsStrip({
+  locale,
+  content,
+}: DestinationsStripProps) {
+  const [destinations, tours] = await Promise.all([
+    getPublishedDestinations(),
+    getPublishedTours(),
+  ]);
+
+  if (destinations.length === 0) return null;
+
+  const tourCountByDestination = new Map<string, number>();
+  for (const tour of tours) {
+    if (!tour.destination_id) continue;
+    tourCountByDestination.set(
+      tour.destination_id,
+      (tourCountByDestination.get(tour.destination_id) ?? 0) + 1
+    );
+  }
+
   return (
     <section className="bg-sand/50">
       <Container className="py-16 sm:py-20">
@@ -27,33 +47,14 @@ export function DestinationsStrip({ locale, content }: DestinationsStripProps) {
         />
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {demoDestinations.map((destination) => (
-            <Link
-              key={destination.name}
-              href={`/${locale}/destinations`}
-              className="group overflow-hidden rounded-2xl border border-brand-border bg-surface shadow-sm transition-shadow hover:shadow-md"
-            >
-              <div className="relative">
-                <PhotoPlaceholder
-                  variant={destination.photo}
-                  className="aspect-[16/9] w-full"
-                />
-                <p className="absolute top-3 end-3 rounded-full bg-black/35 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                  {destination.region}
-                </p>
-              </div>
-              <div className="flex items-center justify-between p-4">
-                <h3 className="font-display text-lg text-ink transition-colors group-hover:text-primary">
-                  {destination.name}
-                </h3>
-                <p className="text-sm text-muted">
-                  {content.tourCountLabel.replace(
-                    "{count}",
-                    String(destination.tourCount)
-                  )}
-                </p>
-              </div>
-            </Link>
+          {destinations.map((destination) => (
+            <DestinationCard
+              key={destination.id}
+              locale={locale}
+              destination={destination}
+              tourCount={tourCountByDestination.get(destination.id) ?? 0}
+              tourCountLabel={content.tourCountLabel}
+            />
           ))}
         </div>
       </Container>
