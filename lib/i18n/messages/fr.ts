@@ -99,6 +99,7 @@ const fr = {
     bookCta: "Réserver ce circuit",
     askCta: "Poser une question",
     otherTours: "D'autres circuits à découvrir",
+    whatsappOr: "Ou échangez directement via",
   },
   destinationDetail: {
     toursTitle: "Nos circuits dans cette région",
@@ -188,6 +189,39 @@ const fr = {
       title: "Questions fréquentes",
       subtitle: "Tout ce qu'il faut savoir avant de partir avec nous.",
       empty: "Aucune question n'est publiée pour le moment.",
+    },
+  },
+  forms: {
+    submitting: "Envoi en cours…",
+    booking: {
+      title: "Réserver ce circuit",
+      subtitle:
+        "Remplissez ce formulaire — réponse garantie sous 24 h. Aucun paiement en ligne : nous confirmons la disponibilité avant tout engagement.",
+      fullName: "Nom complet",
+      email: "E-mail",
+      phone: "Téléphone (facultatif)",
+      departure: "Départ souhaité",
+      flexible: "Date flexible — à convenir",
+      travelDate: "Ou date souhaitée",
+      adults: "Adultes",
+      children: "Enfants",
+      message: "Message (facultatif)",
+      submit: "Envoyer la demande",
+      successTitle: "Demande envoyée !",
+      success:
+        "Merci ! Votre demande a bien été envoyée — nous revenons vers vous sous 24 h.",
+    },
+    inquiry: {
+      title: "Écrivez-nous",
+      subtitle: "Une question, un projet sur mesure ? Envoyez-nous un message.",
+      name: "Nom",
+      email: "E-mail",
+      subject: "Sujet",
+      message: "Message",
+      submit: "Envoyer le message",
+      successTitle: "Message envoyé !",
+      success:
+        "Merci ! Votre message a bien été envoyé — nous vous répondons sous 24 h.",
     },
   },
   loading: "Chargement…",

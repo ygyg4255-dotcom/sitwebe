@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "bundle": "node scripts/build-setup-bundle.mjs",
-    "verify:db": "node --env-file=.env.local scripts/verify-db.mjs"
+    "verify:db": "node --env-file=.env.local scripts/verify-db.mjs",
+    "smoke:phase4": "node --env-file=.env.local scripts/smoke-phase4.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

@@ -96,6 +96,7 @@ const en: Dictionary = {
     bookCta: "Book this tour",
     askCta: "Ask a question",
     otherTours: "More tours to discover",
+    whatsappOr: "Or talk to us directly on",
   },
   destinationDetail: {
     toursTitle: "Our tours in this region",
@@ -182,6 +183,39 @@ const en: Dictionary = {
       title: "Frequently asked questions",
       subtitle: "Everything you need to know before traveling with us.",
       empty: "No questions are published yet.",
+    },
+  },
+  forms: {
+    submitting: "Sending…",
+    booking: {
+      title: "Book this tour",
+      subtitle:
+        "Fill in this form — guaranteed reply within 24 hours. No online payment: we confirm availability before anything else.",
+      fullName: "Full name",
+      email: "Email",
+      phone: "Phone (optional)",
+      departure: "Preferred departure",
+      flexible: "Flexible date — to be arranged",
+      travelDate: "Or preferred date",
+      adults: "Adults",
+      children: "Children",
+      message: "Message (optional)",
+      submit: "Send request",
+      successTitle: "Request sent!",
+      success:
+        "Thank you! Your request has been sent — we will get back to you within 24 hours.",
+    },
+    inquiry: {
+      title: "Write to us",
+      subtitle: "A question, a tailor-made project? Send us a message.",
+      name: "Name",
+      email: "Email",
+      subject: "Subject",
+      message: "Message",
+      submit: "Send message",
+      successTitle: "Message sent!",
+      success:
+        "Thank you! Your message has been sent — we will reply within 24 hours.",
     },
   },
   loading: "Loading…",

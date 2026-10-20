@@ -36,13 +36,12 @@ export async function getCurrentProfile(): Promise<Profile | null> {
  * Guard for Server Actions: stops the action unless the caller is a
  * logged-in staff member (admin or editor). Always call this FIRST in
  * any mutating action — combined with RLS it is defense in depth.
- *
- * Phase 4 will redirect to the admin login page instead of the homepage.
+ * Unauthenticated or non-staff callers land on the admin login page.
  */
 export async function requireStaff(): Promise<Profile> {
   const profile = await getCurrentProfile();
   if (!profile || (profile.role !== "admin" && profile.role !== "editor")) {
-    redirect("/");
+    redirect("/admin/login");
   }
   return profile;
 }
@@ -51,7 +50,7 @@ export async function requireStaff(): Promise<Profile> {
 export async function requireAdmin(): Promise<Profile> {
   const profile = await getCurrentProfile();
   if (!profile || profile.role !== "admin") {
-    redirect("/");
+    redirect("/admin/login");
   }
   return profile;
 }

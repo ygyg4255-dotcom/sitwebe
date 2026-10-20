@@ -1,8 +1,9 @@
 /**
  * Tour detail — the full presentation of one published tour: hero,
  * description, what's included, day-by-day itinerary, scheduled
- * departures and a contact CTA. The booking FORM is Phase 4; the CTA
- * opens a prefilled WhatsApp conversation instead.
+ * departures and the booking request form (Phase 4). The form posts a
+ * validated booking request; the WhatsApp CTA remains as an instant
+ * contact channel.
  *
  * Prerendered at build time for every seeded locale × tour pair
  * (generateStaticParams); unknown slugs render on demand and 404.
@@ -29,6 +30,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { PhotoPlaceholder, photoVariantFor } from "@/components/ui/PhotoPlaceholder";
 import { TourCard } from "@/components/tours/TourCard";
+import { BookingForm, type DepartureOption } from "@/components/forms/BookingForm";
 
 interface TourPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -137,6 +139,27 @@ export default async function TourDetailPage({ params }: TourPageProps) {
 
   const whatsappHref = `https://wa.me/${branding.contact.whatsapp}?text=${encodeURIComponent(title)}`;
 
+  // Booking form labels (forms dictionary block + shared "submitting").
+  const bookingLabels = {
+    ...dict.forms.booking,
+    submitting: dict.forms.submitting,
+  };
+
+  // Preformatted departure options for the booking form's <select>.
+  const departureOptions: DepartureOption[] = departures.map((departure) => {
+    const seatsLeft = departure.max_participants
+      ? departure.max_participants - departure.booked_participants
+      : null;
+    const label = `${formatDate(departure.start_date, locale)} — ${formatDate(
+      departure.end_date,
+      locale
+    )} · ${formatPrice(departure.price_mad ?? tour.price_mad, locale)}`;
+    return {
+      id: departure.id,
+      label: seatsLeft !== null ? `${label} · ${seatsLeft} ${labels.seatsLeft}` : label,
+    };
+  });
+
   return (
     <>
       <JsonLd
@@ -175,7 +198,7 @@ export default async function TourDetailPage({ params }: TourPageProps) {
               {labels.currency} {labels.perPerson}
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <ButtonLink href={whatsappHref} size="lg">
+              <ButtonLink href="#book" size="lg">
                 {detail.bookCta}
               </ButtonLink>
               <ButtonLink
@@ -361,6 +384,32 @@ export default async function TourDetailPage({ params }: TourPageProps) {
           </Card>
         </div>
       </Container>
+
+      {/* Booking request form (anchor target of the hero CTA) */}
+      <section id="book" aria-labelledby="book-title" className="bg-sand/50">
+        <Container className="py-16">
+          <SectionHeading
+            title={bookingLabels.title}
+            subtitle={bookingLabels.subtitle}
+          />
+          <div className="mx-auto mt-10 max-w-2xl">
+            <BookingForm
+              tourId={tour.id}
+              departures={departureOptions}
+              labels={bookingLabels}
+            />
+            <p className="mt-4 text-center text-sm text-muted">
+              {detail.whatsappOr}{" "}
+              <a
+                href={whatsappHref}
+                className="font-medium text-secondary underline"
+              >
+                WhatsApp
+              </a>
+            </p>
+          </div>
+        </Container>
+      </section>
 
       {/* Other tours */}
       {suggestions.length > 0 ? (

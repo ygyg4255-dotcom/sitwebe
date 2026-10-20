@@ -6,23 +6,47 @@
  * database update (RLS double-checks the role) → cache refresh.
  */
 import { updateTag } from "next/cache";
-import { requireStaff } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireStaff } from "@/lib/auth";
 import { siteSettingsSchema } from "@/lib/validation";
-import type { ActionResult } from "./types";
+import { formStr } from "@/lib/form";
+import { zodFailure, type ActionResult } from "./types";
 
-export async function updateSiteSettings(input: unknown): Promise<ActionResult> {
-  // 1. Only logged-in staff may proceed (Phase 4 redirects to login).
+export async function updateSiteSettings(
+  _prev: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  // 1. Only logged-in staff may proceed (others redirect to the login).
   await requireStaff();
 
   // 2. Validate every field — colors must be hex, URLs must be URLs, …
-  const parsed = siteSettingsSchema.safeParse(input);
+  const parsed = siteSettingsSchema.safeParse({
+    agencyName: formStr(formData, "agencyName"),
+    tagline: formStr(formData, "tagline"),
+    logoUrl: formStr(formData, "logoUrl"),
+    primaryColor: formStr(formData, "primaryColor"),
+    primaryDarkColor: formStr(formData, "primaryDarkColor"),
+    accentColor: formStr(formData, "accentColor"),
+    secondaryColor: formStr(formData, "secondaryColor"),
+    inkColor: formStr(formData, "inkColor"),
+    paperColor: formStr(formData, "paperColor"),
+    sandColor: formStr(formData, "sandColor"),
+    surfaceColor: formStr(formData, "surfaceColor"),
+    mutedColor: formStr(formData, "mutedColor"),
+    borderColor: formStr(formData, "borderColor"),
+    phone: formStr(formData, "phone"),
+    whatsapp: formStr(formData, "whatsapp"),
+    email: formStr(formData, "email"),
+    address: formStr(formData, "address"),
+    city: formStr(formData, "city"),
+    facebookUrl: formStr(formData, "facebookUrl"),
+    instagramUrl: formStr(formData, "instagramUrl"),
+    tripadvisorUrl: formStr(formData, "tripadvisorUrl"),
+  });
   if (!parsed.success) {
-    return {
-      success: false,
-      error: parsed.error.issues[0]?.message ?? "Données invalides.",
-    };
+    return zodFailure(parsed.error);
   }
+
   const settings = parsed.data;
 
   // 3. Persist (RLS restricts the update to staff).
@@ -56,7 +80,8 @@ export async function updateSiteSettings(input: unknown): Promise<ActionResult> 
     .eq("id", 1);
 
   if (error) {
-    return { success: false, error: error.message };
+    console.error("updateSiteSettings failed:", error.message);
+    return { success: false, error: "Enregistrement impossible." };
   }
 
   // 4. Refresh the cached settings so public pages re-render (ISR).

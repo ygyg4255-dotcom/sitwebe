@@ -1,8 +1,8 @@
 /**
  * Contact — presentation page: phone, e-mail, address, opening hours,
- * WhatsApp and social links, all from the white-label branding contract
- * (site_settings). The working inquiry form (validation + e-mail) is
- * Phase 4; until then the CTAs open WhatsApp / the mail client.
+ * WhatsApp and social links from the white-label branding contract
+ * (site_settings), plus the inquiry form (Phase 4): a validated message
+ * stored in the inquiries table and read back in the admin area.
  */
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -14,6 +14,7 @@ import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Card } from "@/components/ui/Card";
 import { ButtonLink } from "@/components/ui/Button";
+import { InquiryForm } from "@/components/forms/InquiryForm";
 
 interface ContactPageProps {
   params: Promise<{ locale: string }>;
@@ -127,9 +128,16 @@ export default async function ContactPage({ params }: ContactPageProps) {
         </ButtonLink>
       </div>
 
-      <p className="mx-auto mt-8 max-w-xl text-center text-sm text-muted">
-        {content.formNotice}
-      </p>
+      {/* Inquiry form (Phase 4): validated server-side, stored in the
+          inquiries table, read in the admin inbox */}
+      <div className="mx-auto mt-12 max-w-2xl">
+        <h2 className="mb-6 text-center font-display text-2xl text-ink">
+          {dict.forms.inquiry.title}
+        </h2>
+        <InquiryForm
+          labels={{ ...dict.forms.inquiry, submitting: dict.forms.submitting }}
+        />
+      </div>
     </Container>
   );
 }
