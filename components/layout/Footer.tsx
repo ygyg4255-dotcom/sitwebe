@@ -1,7 +1,7 @@
 /**
  * Site footer: brand, contact details, quick links, social links.
  * All content comes from the white-label branding contract
- * (lib/config/site.ts → `site_settings` table in Phase 4).
+ * (lib/config/site.ts → `site_settings` table, editable in the admin area).
  */
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";

@@ -29,8 +29,8 @@ export async function createSupabaseServerClient() {
           );
         } catch {
           // Called from a Server Component (no writes allowed) — safe to
-          // ignore; session refresh happens in the layout Server Action
-          // (Phase 4) or on the next server action.
+          // ignore; the session refreshes through the auth server
+          // actions (admin sign-in/out) or on a later request.
         }
       },
     },

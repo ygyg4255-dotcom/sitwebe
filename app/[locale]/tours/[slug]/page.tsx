@@ -1,7 +1,7 @@
 /**
  * Tour detail — the full presentation of one published tour: hero,
  * description, what's included, day-by-day itinerary, scheduled
- * departures and the booking request form (Phase 4). The form posts a
+ * departures and the booking request form. The form posts a
  * validated booking request; the WhatsApp CTA remains as an instant
  * contact channel.
  *

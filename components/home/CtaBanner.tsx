@@ -1,6 +1,6 @@
 /**
  * Full-width closing call to action on a terracotta gradient:
- * WhatsApp button (Phase 4 wires the real number from site settings)
+ * WhatsApp button (number from the branding contract / site settings)
  * and a quote-request link to the contact page.
  */
 import type { Locale } from "@/lib/i18n/config";

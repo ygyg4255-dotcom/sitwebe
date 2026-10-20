@@ -20,8 +20,7 @@
  *
  * Side effects (labeled, easy to remove): one booking row and one
  * inquiry row named "Smoke Test Phase 4" — deleted automatically when
- * the test runs with an ADMIN account. See the Phase 4 report / README
- * for cleanup steps.
+ * the test runs with an ADMIN account. See the README for cleanup steps.
  */
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
@@ -431,5 +430,5 @@ if (adminCleanupDone) {
 } else {
   console.log(`Note: labeled rows remain in the database (booking + inquiry named "${BOOKING_NAME}").`);
   console.log("Remove them from the admin UI (/admin/bookings, /admin/inquiries with an");
-  console.log("admin account) or with SQL — see the Phase 4 report.");
+  console.log("admin account) or with SQL — see the README.");
 }

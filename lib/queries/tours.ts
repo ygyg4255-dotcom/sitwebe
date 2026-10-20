@@ -2,8 +2,8 @@
  * Tour queries (public, read-only).
  *
  * All functions are cached ("use cache") with the "tours" tag: tour
- * pages render statically, and staff mutations (publish/unpublish, CRUD
- * in Phase 4) refresh the cache via updateTag("tours").
+ * pages render statically, and staff mutations from the admin area
+ * (publish/unpublish, CRUD) refresh the cache via updateTag("tours").
  *
  * RLS note: these run with the anonymous key, so the database itself
  * filters to is_published = true — the .eq() below is a belt-and-braces

@@ -2,7 +2,8 @@
  * Gallery — a visual overview of the published destinations and tours.
  * The seed has no photography yet, so visuals are the decorative
  * PhotoPlaceholder scenes (they switch to real Supabase Storage images
- * once `image_url` / `cover_image_url` columns are filled — Phase 4).
+ * once `image_url` / `cover_image_url` columns are filled — uploads via
+ * the admin media manager).
  */
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";

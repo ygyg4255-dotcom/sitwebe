@@ -10,8 +10,9 @@ from a single configuration point.
 
 - **Next.js 16** (App Router, typed routes, ISR) + **TypeScript** (strict)
 - **Tailwind CSS v4** (CSS-first design tokens)
-- **Supabase** — PostgreSQL, Auth, Storage (from Phase 2)
-- **Resend** — email notifications (from Phase 4)
+- **Supabase** — PostgreSQL, Auth, Storage
+- **Resend** — email notifications (planned — booking confirmation
+  e-mails are still a TODO)
 
 ## Getting started
 
@@ -22,7 +23,8 @@ npm run dev        # development server → http://localhost:3000
 
 Open http://localhost:3000 — you are redirected to `/fr` (the default
 locale). Try the language switcher in the header (EN / AR are wired up;
-AR switches the layout to right-to-left).
+AR switches the layout to right-to-left). Staff manage the content at
+http://localhost:3000/admin — see [Admin area & smoke test](#admin-area--smoke-test-phase-4).
 
 ### Scripts
 
@@ -35,12 +37,15 @@ AR switches the layout to right-to-left).
 | `npm run typecheck` | TypeScript check without emitting files |
 | `npm run bundle` | Regenerate `supabase/setup_all.sql` from the migrations + seed (with consistency checks) |
 | `npm run verify:db` | Verify the live database: seed data, RLS negative tests, storage bucket, auth endpoint |
+| `npm run smoke:phase4` | Phase 4 smoke test against a **running** server: public forms, admin gate, RLS role rules (creates labeled test rows — see below) |
 
 ### Environment variables
 
 Copy `.env.local.example` to `.env.local` and fill in the values.
-Phase 1 only uses `NEXT_PUBLIC_SITE_URL`; the Supabase and Resend keys
-come into play in Phases 2 and 4.
+`NEXT_PUBLIC_SITE_URL` is always needed; the Supabase keys are
+required for live data and the admin area (without them the public
+site still builds and runs on fallback content). The Resend key is
+reserved for booking notification e-mails (not implemented yet).
 
 ## Supabase setup (Phase 2)
 
@@ -121,14 +126,21 @@ app/
     blog/page.tsx            # Blog index
     blog/[slug]/page.tsx     # Article (safe Markdown rendering)
     gallery/ testimonials/ faq/   # Photo grid / reviews / accordions
+  admin/               # Staff area — French-only, no locale prefix
+    login/page.tsx     # Sign-in form
+    (protected)/       # Session+role-gated: dashboard, settings, and
+                       # CRUD pages for tours, destinations, blog,
+                       # testimonials, FAQs, bookings, inquiries
   sitemap.ts           # Per-URL language alternates, DB-driven slugs
-  robots.ts            # robots.txt (points to the sitemap)
-proxy.ts               # Locale routing: / → /fr (Next 16 proxy convention)
+  robots.ts            # robots.txt (allows public, disallows /admin, points to the sitemap)
+proxy.ts               # Locale routing + admin cookie gate (Next 16 proxy convention)
 components/
   layout/             # Navbar, Footer, LocaleSwitcher
   ui/                 # Design system: Button, Card, Badge, Input, …
   home/               # Homepage sections (Hero, Tours, Testimonials, …)
   tours/ destinations/ testimonials/ blog/  # Content cards
+  forms/              # Public booking + inquiry forms (server actions)
+  admin/              # Admin shell, controls, and entity forms
   seo/JsonLd.tsx      # Escaped <script type="application/ld+json">
   blog/Markdown.tsx   # Whitelist Markdown → React (no raw HTML)
 lib/
@@ -138,7 +150,13 @@ lib/
   types/database.ts   # ★ Typed schema for all 11 tables
   supabase/           # Server / browser / anonymous clients (env-guarded)
   queries/            # Cached read functions ("use cache" + cacheTag)
-  actions/            # Server Actions (Zod-validated mutations)
+    admin.ts          # Admin-area reads (staff-gated)
+  actions/            # Server Actions (Zod-validated mutations) —
+                       # public (bookings, inquiries) + admin (tours,
+                       # destinations, blog, testimonials, FAQs,
+                       # departures, itinerary, media, settings, auth)
+  form.ts             # Server-action form helpers (formData parsing,
+                       # error-result shaping for the forms)
   auth.ts             # getCurrentProfile / requireStaff / requireAdmin
   validation.ts       # Zod schemas (French error messages)
   seo.ts              # Alternates/canonicals + JSON-LD builders
@@ -149,6 +167,7 @@ supabase/
   seed.sql            # Atlas Voyages demo data (idempotent)
 scripts/
   verify-db.mjs        # Database + RLS verification (npm run verify:db)
+  smoke-phase4.mjs     # Phase 4 smoke test (npm run smoke:phase4)
 app/globals.css       # Design tokens (Terracotta/Sahara palette)
 ```
 
@@ -161,13 +180,11 @@ getBranding() → brandingToCssVars() → CSS variables on <html>
              → Tailwind utilities (bg-primary, text-accent, …)
 ```
 
-- **Phase 1:** values come from `defaultBranding` in that file —
-  change the colors/agency name there and the whole site re-themes.
-- **Phase 2 (now):** `getBranding()` reads the `site_settings` table
-  first; when the database is unreachable or not yet configured, it
-  falls back to `defaultBranding` — the site never breaks.
-- **Phase 4:** agencies edit these values from the admin dashboard
-  (the `updateSiteSettings` server action already exists) with zero
+- `getBranding()` reads the `site_settings` table first; when the
+  database is unreachable or not yet configured, it falls back to
+  `defaultBranding` — the site never breaks.
+- Agencies edit these values from the admin dashboard
+  (`/admin/settings` → `updateSiteSettings` server action) with zero
   code changes.
 
 ## i18n (French-first, EN/AR-ready)
@@ -183,6 +200,38 @@ getBranding() → brandingToCssVars() → CSS variables on <html>
   when a translation is missing. Real Arabic translations are still a
   TODO (the ar dictionary currently holds the French reference text).
 
+## Admin area & smoke test (Phase 4)
+
+The staff area lives at **`/admin`** (French-only paths, no locale
+prefix). Anonymous visitors are redirected to `/admin/login` by the
+proxy before rendering; the `(protected)` layout then verifies the real
+session and role, and RLS remains the data boundary. `robots.ts`
+disallows `/admin` so the dashboard never lands in search indexes.
+
+`npm run smoke:phase4` verifies the whole flow against a **running**
+server (`npm run start` or `npm run dev`) and the same `.env.local`:
+
+1. public routes answer 200 and the booking/inquiry forms render,
+2. `/admin` redirects anonymous visitors to `/admin/login`,
+3. anonymous REST inserts persist a booking + inquiry but stay
+   unreadable anonymously (RLS),
+4. the staff account from `SMOKE_TEST_EMAIL`/`SMOKE_TEST_PASSWORD`
+   reads staff data; an EDITER is refused the admin-only deletes while
+   an ADMIN is allowed,
+5. with the session cookie, the admin pages render for that staff member.
+
+The script never prints secrets — the test account's password is
+generated in memory. **Side effects:** one booking row and one inquiry
+row named *"Smoke Test Phase 4"* are created and labeled; they are
+deleted automatically when the test runs with an ADMIN account, and
+can otherwise be removed from `/admin/bookings` and `/admin/inquiries`,
+or with SQL:
+
+```sql
+delete from public.bookings  where full_name = 'Smoke Test Phase 4';
+delete from public.inquiries where name      = 'Smoke Test Phase 4';
+```
+
 ## Roadmap status
 
 | Phase | Scope | Status |
@@ -190,5 +239,5 @@ getBranding() → brandingToCssVars() → CSS variables on <html>
 | 1 | Setup, design system, i18n-ready layout, homepage shell | ✅ Done |
 | 2 | Supabase database, auth, RLS, server actions | ✅ Done |
 | 3 | Public website (tours, destinations, blog, gallery, …) | ✅ Done |
-| 4 | Booking system + admin dashboard | ⏳ |
-| 5 | SEO hardening, security review, deployment, docs | ⏳ |
+| 4 | Booking system + admin dashboard | ✅ Done — end-to-end verification against a live seeded Supabase project (`npm run verify:db`, `npm run smoke:phase4`) is the remaining pre-deployment step |
+| 5 | Booking e-mail notifications (Resend), security review, deployment, client-setup docs | ⏳ |

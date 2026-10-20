@@ -13,8 +13,9 @@
  *   --font-display   →  font-display (Marcellus, elegant headings)
  *   --font-sans      →  font-sans (Inter, body text)
  *
- * Re-theming a client = changing lib/config/site.ts (Phase 4: the
- * `site_settings` database table). No component or CSS edits required.
+ * Re-theming a client = changing lib/config/site.ts (the `site_settings`
+ * database table, editable in the admin area). No component or CSS edits
+ * required.
  */
 @import "tailwindcss";
 

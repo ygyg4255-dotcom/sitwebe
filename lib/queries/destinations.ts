@@ -1,6 +1,7 @@
 /**
  * Destination queries (public, read-only).
- * Tag "destinations": refreshed by destination mutations (Phase 4).
+ * Tag "destinations": refreshed by destination mutations from the
+ * admin area.
  */
 import "server-only";
 import { cacheTag } from "next/cache";

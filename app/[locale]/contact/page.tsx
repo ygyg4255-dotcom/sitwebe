@@ -1,7 +1,7 @@
 /**
  * Contact — presentation page: phone, e-mail, address, opening hours,
  * WhatsApp and social links from the white-label branding contract
- * (site_settings), plus the inquiry form (Phase 4): a validated message
+ * (site_settings), plus the inquiry form: a validated message
  * stored in the inquiries table and read back in the admin area.
  */
 import type { Metadata } from "next";
@@ -128,7 +128,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
         </ButtonLink>
       </div>
 
-      {/* Inquiry form (Phase 4): validated server-side, stored in the
+      {/* Inquiry form: validated server-side, stored in the
           inquiries table, read in the admin inbox */}
       <div className="mx-auto mt-12 max-w-2xl">
         <h2 className="mb-6 text-center font-display text-2xl text-ink">

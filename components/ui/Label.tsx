@@ -1,5 +1,5 @@
 /**
- * Form field label. Used by the contact and booking forms (Phase 4).
+ * Form field label. Used by the contact and booking forms.
  */
 import type { ComponentPropsWithoutRef } from "react";
 

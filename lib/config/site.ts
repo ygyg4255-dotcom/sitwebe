@@ -12,10 +12,10 @@
  *     → Tailwind utilities (bg-primary, text-accent, …) pick them up.
  *   The defaults in `app/globals.css` are only a pre-render fallback.
  *
- * Phase 1: `getBranding()` returns the demo configuration below —
- *          "Atlas Voyages", a fictional demo agency.
- * Phase 4: `getBranding()` will read the `site_settings` table from
- *          Supabase instead. Because every component renders through this
+ * Today: `getBranding()` reads the `site_settings` row from Supabase
+ *          (editable at /admin/settings) and falls back to the demo
+ *          configuration below when the database is unreachable or not
+ *          yet configured. Because every component renders through this
  *          contract, that switch requires NO component changes.
  */
 import type { CSSProperties } from "react";
@@ -26,7 +26,7 @@ export interface SiteBranding {
   agencyName: string;
   /** Short marketing phrase shown under the name. */
   tagline: string;
-  /** Uploaded logo (Supabase Storage) — unused by the UI until Phase 4. */
+  /** Uploaded logo (Supabase Storage), editable at /admin/settings — the public UI does not render it yet. */
   logoUrl: string | null;
   /** Brand colors — hex values, applied as CSS variables at runtime. */
   colors: {
@@ -59,7 +59,7 @@ export interface SiteBranding {
 /**
  * Demo configuration — "Atlas Voyages" is a FICTIONAL agency used for
  * development. It contains no real client data by design: it exists to be
- * replaced, either here (Phase 1) or from the database (Phase 4+).
+ * replaced, either here or from the admin dashboard (/admin/settings).
  */
 export const defaultBranding: SiteBranding = {
   agencyName: "Atlas Voyages",
@@ -94,10 +94,10 @@ export const defaultBranding: SiteBranding = {
 /**
  * The single access point to the current site branding.
  *
- * Phase 2 (now): reads the `site_settings` row from Supabase (cached,
- * revalidated by the updateSiteSettings action) and maps it to the
- * SiteBranding contract. Falls back to `defaultBranding` when Supabase
- * is not configured yet, unreachable, or the row is missing — the site
+ * Reads the `site_settings` row from Supabase (cached, revalidated by
+ * the updateSiteSettings action) and maps it to the SiteBranding
+ * contract. Falls back to `defaultBranding` when Supabase is not
+ * configured yet, unreachable, or the row is missing — the site
  * NEVER breaks over a branding problem.
  */
 export async function getBranding(): Promise<SiteBranding> {

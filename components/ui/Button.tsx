@@ -1,6 +1,6 @@
 /**
  * Buttons — the two exports cover both use cases:
- *   <Button>      → real <button> element (forms, interactions — Phase 4)
+ *   <Button>      → real <button> element (forms, interactions)
  *   <ButtonLink>  → next/link styled as a button (navigation)
  *
  * Variants: primary (terracotta), secondary (teal), outline, ghost,
