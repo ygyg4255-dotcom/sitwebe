@@ -6,6 +6,9 @@
  * submitInquiry (public): anonymous INSERT only (RLS).
  * markInquiryRead (staff) / deleteInquiry (admin): inbox management,
  * matching the RLS policies (defense in depth).
+ *
+ * After a successful insert, the agency is notified by e-mail via
+ * Resend (lib/email.ts) — best-effort, never fails the request.
  */
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -13,6 +16,7 @@ import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { requireAdmin, requireStaff } from "@/lib/auth";
 import { inquirySchema } from "@/lib/validation";
 import { formObject, formStr } from "@/lib/form";
+import { sendInquiryNotification } from "@/lib/email";
 import { zodFailure, type ActionResult } from "./types";
 
 export async function submitInquiry(
@@ -41,6 +45,10 @@ export async function submitInquiry(
     console.error("submitInquiry failed:", error.message);
     return { success: false, error: "Envoi impossible pour le moment." };
   }
+
+  // Best-effort notification to the agency (skipped silently when
+  // Resend is not configured; never fails the visitor's request).
+  await sendInquiryNotification(inquiry);
 
   return { success: true };
 }

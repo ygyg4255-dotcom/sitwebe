@@ -11,8 +11,8 @@ from a single configuration point.
 - **Next.js 16** (App Router, typed routes, ISR) + **TypeScript** (strict)
 - **Tailwind CSS v4** (CSS-first design tokens)
 - **Supabase** — PostgreSQL, Auth, Storage
-- **Resend** — email notifications (planned — booking confirmation
-  e-mails are still a TODO)
+- **Resend** — e-mail notifications to the agency on new booking
+  requests and contact inquiries (skipped gracefully when unconfigured)
 
 ## Getting started
 
@@ -44,8 +44,9 @@ http://localhost:3000/admin — see [Admin area & smoke test](#admin-area--smoke
 Copy `.env.local.example` to `.env.local` and fill in the values.
 `NEXT_PUBLIC_SITE_URL` is always needed; the Supabase keys are
 required for live data and the admin area (without them the public
-site still builds and runs on fallback content). The Resend key is
-reserved for booking notification e-mails (not implemented yet).
+site still builds and runs on fallback content). The Resend keys are
+optional: without them, booking/inquiry e-mail notifications are
+skipped silently and everything else works normally.
 
 ## Supabase setup (Phase 2)
 

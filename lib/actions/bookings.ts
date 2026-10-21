@@ -13,8 +13,9 @@
  * new → contacted → confirmed / cancelled; deletes are admin-only,
  * matching the RLS policies (defense in depth).
  *
- * TODO(Phase 5): after a successful insert, send the notification email
- * to the agency via Resend (lib/email.ts).
+ * After a successful insert, the agency is notified by e-mail via
+ * Resend (lib/email.ts). The send is best-effort: a missing key or a
+ * Resend failure is only logged and never fails the visitor's request.
  */
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -23,6 +24,7 @@ import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { requireAdmin, requireStaff } from "@/lib/auth";
 import { bookingSchema, bookingStatusSchema } from "@/lib/validation";
 import { formObject, formStr } from "@/lib/form";
+import { sendBookingNotification } from "@/lib/email";
 import { zodFailure, type ActionResult } from "./types";
 
 export async function submitBooking(
@@ -46,14 +48,16 @@ export async function submitBooking(
   const publicClient = createPublicClient();
 
   let tourOk = true;
+  let tourTitle: string | null = null;
   if (booking.tourId) {
     const { data: tour } = await publicClient
       .from("tours")
-      .select("id")
+      .select("id, title_fr")
       .eq("id", booking.tourId)
       .eq("is_published", true)
       .maybeSingle();
     tourOk = Boolean(tour);
+    tourTitle = tour?.title_fr ?? null;
   }
 
   let departureOk = true;
@@ -99,6 +103,10 @@ export async function submitBooking(
     console.error("submitBooking failed:", error.message);
     return { success: false, error: "Envoi impossible pour le moment." };
   }
+
+  // 4. Best-effort notification to the agency (skipped silently when
+  //    Resend is not configured; never fails the visitor's request).
+  await sendBookingNotification(booking, tourTitle);
 
   return { success: true };
 }
