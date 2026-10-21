@@ -29,7 +29,8 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 
 // Google fonts loaded at build time — no external requests at runtime.
-// TODO(i18n): add an Arabic font (e.g. Cairo) when Arabic content lands.
+// TODO(i18n): load an Arabic web font (e.g. Cairo) — the Arabic UI
+// dictionary is live and currently renders with the system fallback.
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",

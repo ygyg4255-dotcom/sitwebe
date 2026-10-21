@@ -197,8 +197,9 @@ getBranding() → brandingToCssVars() → CSS variables on <html>
   logical CSS utilities (`ms-*`, `start-*`) so RTL mirrors correctly.
 - Database content has French (required) + optional EN/AR columns;
   `localizedText()` picks the locale's text and falls back to French
-  when a translation is missing. Real Arabic translations are still a
-  TODO (the ar dictionary currently holds the French reference text).
+  when a translation is missing (real Arabic *content* in the database
+  is still a TODO). The Arabic UI dictionary (`lib/i18n/messages/ar.ts`)
+  is fully translated in Modern Standard Arabic.
 
 ## Admin area & smoke test (Phase 4)
 
