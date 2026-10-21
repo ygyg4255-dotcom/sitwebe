@@ -195,6 +195,8 @@ getBranding() → brandingToCssVars() → CSS variables on <html>
   is a compile error.
 - Arabic already renders right-to-left (`dir="rtl"`); layouts use
   logical CSS utilities (`ms-*`, `start-*`) so RTL mirrors correctly.
+  Arabic pages load the **Cairo** web font (next/font) for both display
+  and body text — French/English pages use Marcellus + Inter.
 - Database content has French (required) + optional EN/AR columns;
   `localizedText()` picks the locale's text and falls back to French
   when a translation is missing (real Arabic *content* in the database

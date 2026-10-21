@@ -47,6 +47,16 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Arabic locale: Cairo takes over BOTH font roles. Marcellus/Inter have
+   no Arabic glyphs, so headings and body text would otherwise fall back
+   to whatever serif/sans the OS picks. The variables are swapped on
+   <html> (higher specificity than the next/font class), and the
+   @theme-inline utilities re-resolve them at render time. */
+html[lang="ar"] {
+  --font-inter: var(--font-cairo);
+  --font-marcellus: var(--font-cairo);
+}
+
 body {
   background-color: var(--brand-paper);
   color: var(--brand-ink);

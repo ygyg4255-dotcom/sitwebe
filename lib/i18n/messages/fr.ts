@@ -38,6 +38,7 @@ const fr = {
         "Circuits sur mesure, guides locaux passionnés et rencontres vraies — des dunes de Merzouga aux ruelles millénaires de Fès.",
       primaryCta: "Découvrir nos circuits",
       secondaryCta: "Nous contacter",
+      photoLabel: "Désert de Merzouga",
     },
     trustBar: [
       { value: "15+", label: "années d'expérience" },

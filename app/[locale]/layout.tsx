@@ -11,7 +11,7 @@
  */
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Inter, Marcellus } from "next/font/google";
+import { Cairo, Inter, Marcellus } from "next/font/google";
 import "@/app/globals.css";
 import {
   defaultLocale,
@@ -29,8 +29,10 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 
 // Google fonts loaded at build time — no external requests at runtime.
-// TODO(i18n): load an Arabic web font (e.g. Cairo) — the Arabic UI
-// dictionary is live and currently renders with the system fallback.
+// Cairo carries both font roles on Arabic pages: globals.css swaps the
+// --font-inter / --font-marcellus variables under html[lang="ar"]
+// (Marcellus has no Arabic glyphs, so the display font would otherwise
+// fall back to the OS serif).
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -40,6 +42,11 @@ const marcellus = Marcellus({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-marcellus",
+  display: "swap",
+});
+const cairo = Cairo({
+  subsets: ["arabic", "latin"],
+  variable: "--font-cairo",
   display: "swap",
 });
 
@@ -90,7 +97,9 @@ export default async function LocaleLayout({
       lang={raw}
       dir={getDir(raw)}
       style={brandingToCssVars(branding)}
-      className={`${inter.variable} ${marcellus.variable} h-full antialiased`}
+      className={`${inter.variable} ${marcellus.variable} ${
+        raw === "ar" ? cairo.variable : ""
+      } h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-paper font-sans text-ink">
         <Navbar locale={raw} labels={dict.nav} agencyName={branding.agencyName} />

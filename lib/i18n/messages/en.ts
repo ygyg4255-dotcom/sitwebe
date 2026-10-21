@@ -34,6 +34,7 @@ const en: Dictionary = {
         "Tailor-made tours, passionate local guides and genuine encounters — from the dunes of Merzouga to the thousand-year-old alleys of Fès.",
       primaryCta: "Browse our tours",
       secondaryCta: "Get in touch",
+      photoLabel: "Merzouga Desert",
     },
     trustBar: [
       { value: "15+", label: "years of experience" },

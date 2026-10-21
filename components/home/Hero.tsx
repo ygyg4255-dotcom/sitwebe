@@ -44,7 +44,7 @@ export function Hero({ locale, content }: HeroProps) {
 
         <PhotoPlaceholder
           variant="terracotta"
-          label="Désert de Merzouga"
+          label={content.photoLabel}
           className="aspect-[4/3] w-full rounded-3xl shadow-lg"
         />
       </Container>
