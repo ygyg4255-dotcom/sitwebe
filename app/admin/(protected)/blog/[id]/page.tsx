@@ -4,6 +4,9 @@ import { getStaffBlogPostById } from "@/lib/queries/admin";
 import { BlogPostForm } from "@/components/admin/forms/BlogPostForm";
 import { AdminPageHeader } from "@/components/admin/AdminBits";
 
+// أضف هذا السطر لفرض كون الصفحة ديناميكية وتجاوز خطأ التوليد الثابت
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
